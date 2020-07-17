@@ -1,7 +1,4 @@
 
-
-import starter.gameLoop
-
 /**
  * Entry point
  * is called by screeps
@@ -10,5 +7,5 @@ import starter.gameLoop
  */
 @Suppress("unused")
 fun loop() {
-    gameLoop()
+    console.log("Butts")
 }
