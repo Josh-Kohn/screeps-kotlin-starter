@@ -16,15 +16,10 @@ import screeps.utils.unsafe.jsObject
  */
 @Suppress("unused")
 fun loop() {
-    val workerNumber = increaseWorkerNameNumber()
-    val georgeSpawn: StructureSpawn = Game.spawns["George"]!!
+    val workerName = increaseWorkerNameNumber()
     val workParameters: Array<BodyPartConstant> = arrayOf(WORK, MOVE, CARRY)
-    val spawnJobDeclaration = object {val memory = jsObject<CreepMemory> {this.job = Jobtype.IDLE.name }} as SpawnOptions
-    val spawnCreepResult = georgeSpawn.spawnCreep(workParameters,workerNumber, spawnJobDeclaration)
-    if(spawnCreepResult == OK) {
-        console.log("$georgeSpawn is creating $workerNumber with $workParameters in room ${georgeSpawn.pos.roomName}")
-    }
     val findIdleCreeps = findAllIdleCreeps()
+    createAWorkerCreep(workParameters, workerName)
 }
 
 /**
@@ -44,6 +39,23 @@ fun increaseWorkerNameNumber(): String {
     }
 }
 
+/**
+ * Checks if spawners are available to spawn worker creeps.  Spawns a creep if possible.
+ */
+fun createAWorkerCreep(workParameter: Array<BodyPartConstant>, workerName: String) {
+    val allSpawners = Game.spawns.values
+    val spawnJobDeclaration = object {val memory = jsObject<CreepMemory> {this.job = Jobtype.IDLE.name }} as SpawnOptions
+    for (spawner in allSpawners){
+        if (spawner.spawning == null) {
+              spawner.spawnCreep(workParameter, workerName, spawnJobDeclaration)
+            break
+        }
+    }
+}
+
+/**
+ * Finds idle Creeps
+ */
 fun findAllIdleCreeps(): MutableList<Creep> {
     val idleCreeps: MutableList<Creep> = mutableListOf()
     for(creep in Game.creeps.values){
