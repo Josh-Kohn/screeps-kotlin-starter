@@ -1,5 +1,6 @@
 package memory
 
+import job.Jobtype
 import screeps.api.*
 import screeps.utils.memory.memory
 
@@ -8,7 +9,7 @@ import screeps.utils.memory.memory
 * i.e. creep.memory.building = true */
 
 /* Creep.memory */
-var CreepMemory.building: Boolean by memory { false }
+var CreepMemory.job: String by memory {Jobtype.IDLE.name}
 
 
 /* Rest of the persistent memory structures.
