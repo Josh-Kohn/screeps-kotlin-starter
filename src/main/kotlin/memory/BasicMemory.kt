@@ -1,6 +1,7 @@
 package memory
 
 import job.Jobtype
+import objects.SourceDataObject
 import screeps.api.*
 import screeps.utils.memory.memory
 
@@ -26,7 +27,8 @@ var PowerCreepMemory.test : Int by memory { 0 }
 var FlagMemory.test : Int by memory { 0 }
 
 /* room.memory */
-var RoomMemory.numberOfCreeps : Int by memory { 0 }
+var RoomMemory.sources : Array<SourceDataObject> by memory { arrayOf<SourceDataObject>() }
+var RoomMemory.initialized : Boolean by memory { false }
 
 /* spawn.memory */
 var SpawnMemory.test : Int by memory { 0 }

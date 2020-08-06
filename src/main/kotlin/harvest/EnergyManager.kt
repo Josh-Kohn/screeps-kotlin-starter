@@ -18,7 +18,6 @@ class EnergyManager(val creep: Creep) {
             if (roomController != null){
                if (roomController.my == true) {
                     val sourcesInRoom: Array<Source> = playerOwnedRoom.find(FIND_SOURCES)
-
                }
             }
         }
@@ -28,8 +27,6 @@ class EnergyManager(val creep: Creep) {
      * Function for Harvesting Energy
      */
     fun collectEnergy() {
-        val source:
-creep.harvest()
     }
 
 

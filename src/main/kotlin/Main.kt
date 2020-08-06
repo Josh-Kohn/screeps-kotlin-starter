@@ -1,4 +1,5 @@
 import job.Jobtype
+import managers.InitiliazationManager
 import memory.job
 import screeps.api.Game
 import screeps.api.get
@@ -20,6 +21,8 @@ fun loop() {
     val workParameters: Array<BodyPartConstant> = arrayOf(WORK, MOVE, CARRY)
     val findIdleCreeps = findAllIdleCreeps()
     createAWorkerCreep(workParameters, workerName)
+    val myRoom = getMyRooms()
+    InitiliazationManager(myRoom)
 }
 
 /**
@@ -34,7 +37,7 @@ fun increaseWorkerNameNumber(): String {
             return workerName
         }
         else{
-            workerNumber = workerNumber+1
+            workerNumber += 1
         }
     }
 }
@@ -67,6 +70,19 @@ fun findAllIdleCreeps(): MutableList<Creep> {
 }
 
 
-
-
+/**
+ * Gets my rooms
+ */
+fun getMyRooms(): MutableList<Room> {
+    val myRooms: MutableList<Room> = mutableListOf()
+    for (playerOwnedRoom in Game.rooms.values){
+        val roomController = playerOwnedRoom.controller
+        if (roomController != null){
+            if (roomController.my == true) {
+                myRooms.add(playerOwnedRoom)
+            }
+        }
+    }
+    return myRooms
+}
 
