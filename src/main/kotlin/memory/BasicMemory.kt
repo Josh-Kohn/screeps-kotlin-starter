@@ -11,6 +11,9 @@ import screeps.utils.memory.memory
 
 /* Creep.memory */
 var CreepMemory.job: String by memory {Jobtype.IDLE.name}
+var CreepMemory.roomSpawnLocation: String by memory {""}
+var CreepMemory.sourceIDAssignment: String by memory {""}
+var CreepMemory.fullOfEnergy: Boolean by memory { false }
 
 
 /* Rest of the persistent memory structures.

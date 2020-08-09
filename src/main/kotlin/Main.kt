@@ -1,12 +1,11 @@
+import harvest.CreepHarvestManager
 import job.Jobtype
 import managers.InitiliazationManager
 import memory.job
+import memory.roomSpawnLocation
 import screeps.api.Game
 import screeps.api.get
-import screeps.api.structures.Structure
-import screeps.api.structures.StructureSpawn
 import screeps.api.*
-import screeps.api.structures.SpawnOptions
 import screeps.utils.unsafe.jsObject
 
 /**
@@ -17,12 +16,18 @@ import screeps.utils.unsafe.jsObject
  */
 @Suppress("unused")
 fun loop() {
-    val workerName = increaseWorkerNameNumber()
-    val workParameters: Array<BodyPartConstant> = arrayOf(WORK, MOVE, CARRY)
-    val findIdleCreeps = findAllIdleCreeps()
-    createAWorkerCreep(workParameters, workerName)
     val myRoom = getMyRooms()
     InitiliazationManager(myRoom)
+
+    val workerName = increaseWorkerNameNumber()
+    val workParameters: Array<BodyPartConstant> = arrayOf(WORK, MOVE, CARRY)
+    createAWorkerCreep(workParameters, workerName)
+
+    val findIdleCreeps = findAllIdleCreeps()
+    assignIdleCreepsToHarvesterJob(findIdleCreeps)
+    val findHarvesterCreeps = findAllHarvesterCreeps()
+    val creepHarvestManager = CreepHarvestManager(findHarvesterCreeps)
+    creepHarvestManager.harvestSource()
 }
 
 /**
@@ -47,10 +52,11 @@ fun increaseWorkerNameNumber(): String {
  */
 fun createAWorkerCreep(workParameter: Array<BodyPartConstant>, workerName: String) {
     val allSpawners = Game.spawns.values
-    val spawnJobDeclaration = object {val memory = jsObject<CreepMemory> {this.job = Jobtype.IDLE.name }} as SpawnOptions
     for (spawner in allSpawners){
         if (spawner.spawning == null) {
-              spawner.spawnCreep(workParameter, workerName, spawnJobDeclaration)
+              spawner.spawnCreep(workParameter, workerName, options { memory = jsObject<CreepMemory> {
+                  this.roomSpawnLocation = spawner.pos.roomName
+              }})
             break
         }
     }
@@ -84,5 +90,27 @@ fun getMyRooms(): MutableList<Room> {
         }
     }
     return myRooms
+}
+
+/**
+ * Assign Idle Creeps to Harvester
+ */
+fun assignIdleCreepsToHarvesterJob(idleCreeps: List<Creep>) {
+    for (unemployedCreeps in idleCreeps){
+        unemployedCreeps.memory.job = Jobtype.HARVESTER.name
+    }
+}
+
+/**
+ * Finds all Harvester Creeps
+ */
+fun findAllHarvesterCreeps(): MutableList<Creep> {
+    val harvesterCreeps: MutableList<Creep> = mutableListOf()
+    for(creep in Game.creeps.values){
+        if(creep.memory.job == Jobtype.HARVESTER.name){
+            harvesterCreeps.add(creep)
+        }
+    }
+    return harvesterCreeps
 }
 
