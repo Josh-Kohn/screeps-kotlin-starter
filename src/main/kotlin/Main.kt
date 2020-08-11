@@ -1,4 +1,4 @@
-import harvest.CreepHarvestManager
+import managers.harvest.CreepHarvestManager
 import job.Jobtype
 import managers.InitiliazationManager
 import memory.job

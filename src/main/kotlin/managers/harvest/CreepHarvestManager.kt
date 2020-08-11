@@ -1,4 +1,6 @@
-package harvest
+package managers.harvest
+import managers.CreepStateManager
+import memory.fullOfEnergy
 import memory.roomSpawnLocation
 import memory.sourceIDAssignment
 import memory.sources
@@ -9,7 +11,7 @@ import screeps.api.*
  * The instructions for how to harvest a source.  Pick an initial source, store in the creep's memory, and go harvest that source
  */
 
-class CreepHarvestManager(private val creeps: List<Creep>) {
+class CreepHarvestManager(private val creeps: List<Creep>): CreepStateManager() {
 
     private fun pickASource(roomName: String): String? {
         val sources = Game.rooms[roomName]!!.memory.sources
@@ -25,15 +27,20 @@ class CreepHarvestManager(private val creeps: List<Creep>) {
     fun harvestSource(){
         //Checks to see if creep has a sourceID
         for (creep in creeps){
-            if (creep.memory.sourceIDAssignment.isBlank()){
-                val roomName = creep.memory.roomSpawnLocation
-                creep.memory.sourceIDAssignment = pickASource(roomName) ?: ""
-            }
-            else{
-                val getSource = Game.getObjectById<Source>(creep.memory.sourceIDAssignment)!!
-                when (creep.harvest(getSource)) {
-                    ERR_NOT_IN_RANGE -> {
-                        creep.moveTo(getSource)
+            energyManagement(creep)
+            if(creep.memory.fullOfEnergy){
+
+            } else{
+                //Gets the creep to harvest source
+                if (creep.memory.sourceIDAssignment.isBlank()){
+                    val roomName = creep.memory.roomSpawnLocation
+                    creep.memory.sourceIDAssignment = pickASource(roomName) ?: ""
+                } else {
+                    val getSource = Game.getObjectById<Source>(creep.memory.sourceIDAssignment)!!
+                    when (creep.harvest(getSource)) {
+                        ERR_NOT_IN_RANGE -> {
+                            creep.moveTo(getSource)
+                        }
                     }
                 }
             }
