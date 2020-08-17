@@ -3,9 +3,12 @@ import job.Jobtype
 import managers.InitiliazationManager
 import memory.job
 import memory.roomSpawnLocation
+import memory.sourceIDAssignment
+import memory.sources
 import screeps.api.Game
 import screeps.api.get
 import screeps.api.*
+import screeps.utils.unsafe.delete
 import screeps.utils.unsafe.jsObject
 
 /**
@@ -18,6 +21,9 @@ import screeps.utils.unsafe.jsObject
 fun loop() {
     val myRoom = getMyRooms()
     InitiliazationManager(myRoom)
+
+    val creepMemories = deleteCreepsFromMemory()
+    updateCreepCounter(creepMemories,myRoom)
 
     val workerName = increaseWorkerNameNumber()
     val workParameters: Array<BodyPartConstant> = arrayOf(WORK, MOVE, CARRY)
@@ -114,3 +120,36 @@ fun findAllHarvesterCreeps(): MutableList<Creep> {
     return harvesterCreeps
 }
 
+/**
+ * Compares Creeps in memory to game.creeps, isolates "dead" creeps lingering in memory and removes them
+ */
+fun deleteCreepsFromMemory():List<CreepMemory>{
+    val deadCreepList = mutableListOf<CreepMemory>()
+    for(deadCreep in Memory.creeps.keys){
+        val creepCheck = Game.creeps[deadCreep]
+        if (creepCheck == null){
+            deadCreepList.add(Memory.creeps[deadCreep]!!)
+            delete(Memory.creeps[deadCreep])
+        }
+    }
+    return deadCreepList
+}
+
+/**
+ * Find all creep counters in memory and updates them based on dead creeps
+ */
+fun updateCreepCounter(memories: List<CreepMemory>, rooms: List<Room>) {
+    for (memory in memories) {
+        val deadCreepSource = memory.sourceIDAssignment
+        val deadCreepRoom = memory.roomSpawnLocation
+        for (room in rooms){
+            if (deadCreepRoom == room.name) {
+                for (roomSource in room.memory.sources) {
+                    if (deadCreepSource == roomSource.sourceID) {
+                        roomSource.currentCreeps -=1
+                    }
+                }
+            }
+        }
+    }
+}
