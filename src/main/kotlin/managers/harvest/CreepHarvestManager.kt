@@ -29,15 +29,16 @@ class CreepHarvestManager(private val creeps: List<Creep>): CreepStateManager() 
                         || it.structureType == STRUCTURE_EXTENSION)
             }
         }) as Array<StoreOwner>
-        val availableDepot = potentialDepot.filter { it.store.getFreeCapacity ==
+        //Checks to see if potentialDepot list is empty
+        if(potentialDepot.isEmpty()){
+            return null
         }
-        for (availableSource in potentialDepot){
-            if (availableSource.currentCreeps < availableSource.maxCreeps){
-                availableSource.currentCreeps += 1
-                return availableSource.sourceID
-            }
+        val availableDepots = potentialDepot.filter { it.store.getFreeCapacity(RESOURCE_ENERGY) > 0 }
+        if(availableDepots.isEmpty()){
+            return null
         }
-        return null
+        val sortedDepots = availableDepots.sortedBy { it.store.getUsedCapacity(RESOURCE_ENERGY) }
+        return sortedDepots[0].id
     }
 
 

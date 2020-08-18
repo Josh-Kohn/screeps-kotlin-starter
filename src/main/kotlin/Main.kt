@@ -25,9 +25,14 @@ fun loop() {
     val creepMemories = deleteCreepsFromMemory()
     updateCreepCounter(creepMemories,myRoom)
 
-    val workerName = increaseWorkerNameNumber()
-    val workParameters: Array<BodyPartConstant> = arrayOf(WORK, MOVE, CARRY)
-    createAWorkerCreep(workParameters, workerName)
+    for (room in myRoom){
+        val needCreep = needHarvesterCreep(room)
+        if (needCreep) {
+            val workerName = increaseWorkerNameNumber()
+            val workParameters: Array<BodyPartConstant> = arrayOf(WORK, MOVE, CARRY)
+            createAWorkerCreep(workParameters, workerName, room.name)
+        }
+    }
 
     val findIdleCreeps = findAllIdleCreeps()
     assignIdleCreepsToHarvesterJob(findIdleCreeps)
@@ -56,8 +61,8 @@ fun increaseWorkerNameNumber(): String {
 /**
  * Checks if spawners are available to spawn worker creeps.  Spawns a creep if possible.
  */
-fun createAWorkerCreep(workParameter: Array<BodyPartConstant>, workerName: String) {
-    val allSpawners = Game.spawns.values
+fun createAWorkerCreep(workParameter: Array<BodyPartConstant>, workerName: String, roomName: String) {
+    val allSpawners = Game.spawns.values.filter { it.pos.roomName ==  roomName}
     for (spawner in allSpawners){
         if (spawner.spawning == null) {
               spawner.spawnCreep(workParameter, workerName, options { memory = jsObject<CreepMemory> {
@@ -153,3 +158,14 @@ fun updateCreepCounter(memories: List<CreepMemory>, rooms: List<Room>) {
         }
     }
 }
+
+fun needHarvesterCreep(currentRoom: Room):Boolean {
+    val memories = currentRoom.memory.sources
+    for (sourceMemory in memories){
+        if (sourceMemory.currentCreeps < sourceMemory.maxCreeps){
+            return true
+        }
+    }
+    return false
+}
+
