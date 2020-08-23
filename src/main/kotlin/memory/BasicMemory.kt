@@ -15,6 +15,7 @@ var CreepMemory.roomSpawnLocation: String by memory {""}
 var CreepMemory.sourceIDAssignment: String by memory {""}
 var CreepMemory.fullOfEnergy: Boolean by memory { false }
 var CreepMemory.depositID: String by memory {""}
+var CreepMemory.constructionSiteID: String by memory {""}
 
 
 /* Rest of the persistent memory structures.
