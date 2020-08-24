@@ -1,21 +1,20 @@
 package managers
 
-import memory.constructionSiteID
-import memory.depositID
-import memory.fullOfEnergy
+import memory.*
 import screeps.api.*
 
 /**
  * Directs the builder creeps to either build or upgrade the RCL depending on the room level
  */
 
-class BuildCreepManager(private val creeps:List<Creep>): CreepStateManager() {
+class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, CreepStateManager() {
 
-    fun buildConstructionSites(roomName: String): String? {
+    fun buildConstructionSites(): String? {
         for (builder in creeps) {
+            val homeRoom = Game.rooms[builder.pos.roomName]!!
             energyManagement(builder)
             if (builder.memory.fullOfEnergy) {
-                val constructionSites = Game.rooms[roomName]!!.find(FIND_CONSTRUCTION_SITES)
+                val constructionSites = homeRoom.find(FIND_CONSTRUCTION_SITES)
                 if (constructionSites.isEmpty()) {
                     when (builder.upgradeController(builder.room.controller!!)) {
                         ERR_NOT_IN_RANGE -> {
@@ -42,10 +41,11 @@ class BuildCreepManager(private val creeps:List<Creep>): CreepStateManager() {
                 }
             } else {
                 //Builder Creep has no energy, go find a source and harvest
-                //1. Find all the sources in the room
-                //2. Pick one source in the room
+                getVacantSourceID(homeRoom.name)
+                getSourceID(homeRoom.name)
+
                 //3. Store the Source ID in builder's memory
-                //4. Look at line 30 and 31 and store that information in a val
+                //4. Get the source object from the SourceID
                 //5. Try to harvest the source (then move to it if we're not in range)
             }
         }

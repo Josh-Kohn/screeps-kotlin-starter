@@ -1,5 +1,6 @@
 import managers.harvest.CreepHarvestManager
 import job.Jobtype
+import managers.BuildCreepManager
 import managers.InitiliazationManager
 import memory.job
 import memory.roomSpawnLocation
@@ -35,10 +36,14 @@ fun loop() {
     }
 
     val findIdleCreeps = findAllIdleCreeps()
-    assignIdleCreepsToHarvesterJob(findIdleCreeps)
+    //assignIdleCreepsToHarvesterJob(findIdleCreeps)
     val findHarvesterCreeps = findAllHarvesterCreeps()
     val creepHarvestManager = CreepHarvestManager(findHarvesterCreeps)
     creepHarvestManager.harvestSource()
+
+    val buildCreepManager = BuildCreepManager(findAllIdleCreeps())
+    buildCreepManager.buildConstructionSites("sim")
+
 }
 
 /**
@@ -85,7 +90,6 @@ fun findAllIdleCreeps(): MutableList<Creep> {
     }
     return idleCreeps
 }
-
 
 /**
  * Gets my rooms
