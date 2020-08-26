@@ -1,6 +1,6 @@
 package memory
 
-import job.Jobtype
+import job.JobType
 import objects.SourceDataObject
 import screeps.api.*
 import screeps.utils.memory.memory
@@ -10,7 +10,7 @@ import screeps.utils.memory.memory
 * i.e. creep.memory.building = true */
 
 /* Creep.memory */
-var CreepMemory.job: String by memory {Jobtype.IDLE.name}
+var CreepMemory.job: String by memory {JobType.IDLE.name}
 var CreepMemory.roomSpawnLocation: String by memory {""}
 var CreepMemory.sourceIDAssignment: String by memory {""}
 var CreepMemory.fullOfEnergy: Boolean by memory { false }

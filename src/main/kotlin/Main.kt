@@ -1,5 +1,5 @@
 import managers.harvest.CreepHarvestManager
-import job.Jobtype
+import job.JobType
 import managers.BuildCreepManager
 import managers.InitiliazationManager
 import memory.job
@@ -42,7 +42,8 @@ fun loop() {
     creepHarvestManager.harvestSource()
 
     val buildCreepManager = BuildCreepManager(findAllIdleCreeps())
-    buildCreepManager.buildConstructionSites("sim")
+    buildCreepManager.buildConstructionSites()
+    assignIdleCreepsToBuilderJob(findAllIdleCreeps())
 
 }
 
@@ -84,7 +85,7 @@ fun createAWorkerCreep(workParameter: Array<BodyPartConstant>, workerName: Strin
 fun findAllIdleCreeps(): MutableList<Creep> {
     val idleCreeps: MutableList<Creep> = mutableListOf()
     for(creep in Game.creeps.values){
-        if(creep.memory.job == Jobtype.IDLE.name){
+        if(creep.memory.job == JobType.IDLE.name){
             idleCreeps.add(creep)
         }
     }
@@ -112,7 +113,16 @@ fun getMyRooms(): MutableList<Room> {
  */
 fun assignIdleCreepsToHarvesterJob(idleCreeps: List<Creep>) {
     for (unemployedCreeps in idleCreeps){
-        unemployedCreeps.memory.job = Jobtype.HARVESTER.name
+        unemployedCreeps.memory.job = JobType.HARVESTER.name
+    }
+}
+
+/**
+ * Assign Idle Creeps to Builder
+ */
+fun assignIdleCreepsToBuilderJob(idleCreeps: List<Creep>) {
+    for (unemployedCreeps in idleCreeps){
+        unemployedCreeps.memory.job = JobType.BUILDER.name
     }
 }
 
@@ -122,7 +132,7 @@ fun assignIdleCreepsToHarvesterJob(idleCreeps: List<Creep>) {
 fun findAllHarvesterCreeps(): MutableList<Creep> {
     val harvesterCreeps: MutableList<Creep> = mutableListOf()
     for(creep in Game.creeps.values){
-        if(creep.memory.job == Jobtype.HARVESTER.name){
+        if(creep.memory.job == JobType.HARVESTER.name){
             harvesterCreeps.add(creep)
         }
     }
@@ -155,7 +165,7 @@ fun updateCreepCounter(memories: List<CreepMemory>, rooms: List<Room>) {
             if (deadCreepRoom == room.name) {
                 for (roomSource in room.memory.sources) {
                     if (deadCreepSource == roomSource.sourceID) {
-                        roomSource.currentCreeps -=1
+                        roomSource.currentHarvesterCreeps -=1
                     }
                 }
             }
@@ -166,10 +176,18 @@ fun updateCreepCounter(memories: List<CreepMemory>, rooms: List<Room>) {
 fun needHarvesterCreep(currentRoom: Room):Boolean {
     val memories = currentRoom.memory.sources
     for (sourceMemory in memories){
-        if (sourceMemory.currentCreeps < sourceMemory.maxCreeps){
+        if (sourceMemory.currentHarvesterCreeps < sourceMemory.maxHarvesterCreeps){
             return true
         }
     }
     return false
 }
 
+
+/**
+ * 1. Find all the sources in the room
+ * 2. See if Current Creeps = Max Creeps
+ *      2a. If they do, don't spawn harvester creeps
+ * 3. Check to see if we have construction sites
+ *      3a. If we do, then spawn builder creeps
+ */

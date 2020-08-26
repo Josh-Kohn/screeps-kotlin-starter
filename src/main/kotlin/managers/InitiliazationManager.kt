@@ -15,7 +15,7 @@ class InitiliazationManager(val rooms: List<Room> ) {
                     if (maxEmptySpaces == 1) {
                         maxEmptySpaces += 1
                     }
-                    val sourceDataMemory = SourceDataObject(singleSource.id,0, maxEmptySpaces-1)
+                    val sourceDataMemory = SourceDataObject(singleSource.id,0, maxEmptySpaces-1, freeCreepSlot = true)
                     room.memory.sources = room.memory.sources + sourceDataMemory
                 }
                 room.memory.initialized = true

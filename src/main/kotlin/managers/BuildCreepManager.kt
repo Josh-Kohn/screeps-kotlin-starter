@@ -9,7 +9,7 @@ import screeps.api.*
 
 class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, CreepStateManager() {
 
-    fun buildConstructionSites(): String? {
+    fun buildConstructionSites() {
         for (builder in creeps) {
             val homeRoom = Game.rooms[builder.pos.roomName]!!
             energyManagement(builder)
@@ -41,16 +41,18 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                 }
             } else {
                 //Builder Creep has no energy, go find a source and harvest
-                getVacantSourceID(homeRoom.name)
-                getSourceID(homeRoom.name)
-
-                //3. Store the Source ID in builder's memory
-                //4. Get the source object from the SourceID
-                //5. Try to harvest the source (then move to it if we're not in range)
+                if (builder.memory.sourceIDAssignment.isBlank()){
+                    builder.memory.sourceIDAssignment = getFreeSourceID(homeRoom.name) ?: ""
+                } else {
+                    val getSource = Game.getObjectById<Source>(builder.memory.sourceIDAssignment)!!
+                    when (builder.harvest(getSource)) {
+                        ERR_NOT_IN_RANGE -> {
+                            builder.moveTo(getSource)
+                        }
+                    }
+                }
             }
         }
-
-        return null
     }
 }
 

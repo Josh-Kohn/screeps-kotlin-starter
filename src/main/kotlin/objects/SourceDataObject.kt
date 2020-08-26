@@ -2,5 +2,7 @@ package objects
 
 data class SourceDataObject(
         val sourceID: String,
-        var currentCreeps: Int,
-        val maxCreeps: Int)
+        var currentHarvesterCreeps: Int,
+        val maxHarvesterCreeps: Int,
+        var freeCreepSlot: Boolean
+)
