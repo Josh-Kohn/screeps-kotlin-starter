@@ -2,6 +2,7 @@ import managers.harvest.CreepHarvestManager
 import job.JobType
 import managers.BuildCreepManager
 import managers.InitiliazationManager
+import managers.SpawningManager
 import memory.job
 import memory.roomSpawnLocation
 import memory.sourceIDAssignment
@@ -10,7 +11,6 @@ import screeps.api.Game
 import screeps.api.get
 import screeps.api.*
 import screeps.utils.unsafe.delete
-import screeps.utils.unsafe.jsObject
 
 /**
  * Entry point
@@ -27,56 +27,22 @@ fun loop() {
     updateCreepCounter(creepMemories,myRoom)
 
     for (room in myRoom){
-        val needCreep = needHarvesterCreep(room)
-        if (needCreep) {
-            val workerName = increaseWorkerNameNumber()
-            val workParameters: Array<BodyPartConstant> = arrayOf(WORK, MOVE, CARRY)
-            createAWorkerCreep(workParameters, workerName, room.name)
+        val spawnManager = SpawningManager()
+        val findAJob = spawnManager.findJob(room)
+        if(findAJob != JobType.IDLE.name) {
+            val workerName = spawnManager.increaseWorkerNameNumber()
+            val bodyPartList = spawnManager.getBodyByJob(findAJob, room)
+            spawnManager.createACreep(bodyPartList.toTypedArray(), workerName, room.name, findAJob)
         }
     }
 
-    val findIdleCreeps = findAllIdleCreeps()
-    //assignIdleCreepsToHarvesterJob(findIdleCreeps)
     val findHarvesterCreeps = findAllHarvesterCreeps()
     val creepHarvestManager = CreepHarvestManager(findHarvesterCreeps)
     creepHarvestManager.harvestSource()
 
-    val buildCreepManager = BuildCreepManager(findAllIdleCreeps())
+    val buildCreepManager = BuildCreepManager(findAllBuilderCreeps())
     buildCreepManager.buildConstructionSites()
-    assignIdleCreepsToBuilderJob(findAllIdleCreeps())
 
-}
-
-/**
- * Checks to see if worker is null and increases worker number
- */
-fun increaseWorkerNameNumber(): String {
-    var workerNumber = 1
-    while (true) {
-        val workerName = "Worker $workerNumber"
-        val nameChecker: Creep? = Game.creeps[workerName]
-        if (nameChecker == null) {
-            return workerName
-        }
-        else{
-            workerNumber += 1
-        }
-    }
-}
-
-/**
- * Checks if spawners are available to spawn worker creeps.  Spawns a creep if possible.
- */
-fun createAWorkerCreep(workParameter: Array<BodyPartConstant>, workerName: String, roomName: String) {
-    val allSpawners = Game.spawns.values.filter { it.pos.roomName ==  roomName}
-    for (spawner in allSpawners){
-        if (spawner.spawning == null) {
-              spawner.spawnCreep(workParameter, workerName, options { memory = jsObject<CreepMemory> {
-                  this.roomSpawnLocation = spawner.pos.roomName
-              }})
-            break
-        }
-    }
 }
 
 /**
@@ -108,23 +74,6 @@ fun getMyRooms(): MutableList<Room> {
     return myRooms
 }
 
-/**
- * Assign Idle Creeps to Harvester
- */
-fun assignIdleCreepsToHarvesterJob(idleCreeps: List<Creep>) {
-    for (unemployedCreeps in idleCreeps){
-        unemployedCreeps.memory.job = JobType.HARVESTER.name
-    }
-}
-
-/**
- * Assign Idle Creeps to Builder
- */
-fun assignIdleCreepsToBuilderJob(idleCreeps: List<Creep>) {
-    for (unemployedCreeps in idleCreeps){
-        unemployedCreeps.memory.job = JobType.BUILDER.name
-    }
-}
 
 /**
  * Finds all Harvester Creeps
@@ -137,6 +86,19 @@ fun findAllHarvesterCreeps(): MutableList<Creep> {
         }
     }
     return harvesterCreeps
+}
+
+/**
+ * Finds all Builder Creeps
+ */
+fun findAllBuilderCreeps(): MutableList<Creep> {
+    val builderCreeps: MutableList<Creep> = mutableListOf()
+    for(creep in Game.creeps.values){
+        if(creep.memory.job == JobType.BUILDER.name){
+            builderCreeps.add(creep)
+        }
+    }
+    return builderCreeps
 }
 
 /**
@@ -183,11 +145,3 @@ fun needHarvesterCreep(currentRoom: Room):Boolean {
     return false
 }
 
-
-/**
- * 1. Find all the sources in the room
- * 2. See if Current Creeps = Max Creeps
- *      2a. If they do, don't spawn harvester creeps
- * 3. Check to see if we have construction sites
- *      3a. If we do, then spawn builder creeps
- */

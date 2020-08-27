@@ -11,7 +11,7 @@ import screeps.api.*
 class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManager, CreepStateManager() {
 
     private fun pickADepot(roomName: String): String? {
-        val potentialDepot = Game.rooms[roomName]!!.find(FIND_MY_STRUCTURES, options {
+        val potentialDepot = Game.rooms[roomName]!!.find(FIND_STRUCTURES, options {
             filter = {
                 (it.structureType == STRUCTURE_CONTAINER
                         || it.structureType == STRUCTURE_STORAGE
@@ -46,6 +46,9 @@ class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManage
                         when (creep.transfer(getDepot, RESOURCE_ENERGY)) {
                             ERR_NOT_IN_RANGE -> {
                                 creep.moveTo(getDepot)
+                            }
+                            ERR_FULL -> {
+                                creep.memory.depositID = ""
                             }
                         }
                     } else {

@@ -1,6 +1,7 @@
 package managers
 import memory.*
 import screeps.api.Game
+import screeps.api.Room
 import screeps.api.get
 
 /**
@@ -31,16 +32,12 @@ interface EnergyLocationManager {
         return null
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
+    fun freeSlotToTrue(room: Room, returnSourceID: String){
+        val sources = room.memory.sources
+        for (source in sources){
+            if (source.sourceID == returnSourceID){
+                source.freeCreepSlot = true
+            }
+        }
+    }
 }
