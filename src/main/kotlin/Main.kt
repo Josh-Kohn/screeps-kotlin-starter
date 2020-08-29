@@ -3,6 +3,7 @@ import job.JobType
 import managers.BuildCreepManager
 import managers.InitiliazationManager
 import managers.SpawningManager
+import managers.UpgradeCreepManager
 import memory.job
 import memory.roomSpawnLocation
 import memory.sourceIDAssignment
@@ -30,7 +31,7 @@ fun loop() {
         val spawnManager = SpawningManager()
         val findAJob = spawnManager.findJob(room)
         if(findAJob != JobType.IDLE.name) {
-            val workerName = spawnManager.increaseWorkerNameNumber()
+            val workerName = spawnManager.generateNewCreepNameByJobType(findAJob)
             val bodyPartList = spawnManager.getBodyByJob(findAJob, room)
             spawnManager.createACreep(bodyPartList.toTypedArray(), workerName, room.name, findAJob)
         }
@@ -42,6 +43,9 @@ fun loop() {
 
     val buildCreepManager = BuildCreepManager(findAllBuilderCreeps())
     buildCreepManager.buildConstructionSites()
+
+    val upgraderCreepManager = UpgradeCreepManager(findAllUpgraderCreeps())
+    upgraderCreepManager.upgradeRoomController()
 
 }
 
@@ -95,6 +99,16 @@ fun findAllBuilderCreeps(): MutableList<Creep> {
     val builderCreeps: MutableList<Creep> = mutableListOf()
     for(creep in Game.creeps.values){
         if(creep.memory.job == JobType.BUILDER.name){
+            builderCreeps.add(creep)
+        }
+    }
+    return builderCreeps
+}
+
+fun findAllUpgraderCreeps(): MutableList<Creep> {
+    val builderCreeps: MutableList<Creep> = mutableListOf()
+    for(creep in Game.creeps.values){
+        if(creep.memory.job == JobType.UPGRADER.name){
             builderCreeps.add(creep)
         }
     }

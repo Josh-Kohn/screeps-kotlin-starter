@@ -18,11 +18,13 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                 freeSlotToTrue(homeRoom, builder.memory.sourceIDAssignment)
                 val constructionSites = homeRoom.find(FIND_CONSTRUCTION_SITES)
                 if (constructionSites.isEmpty()) {
-                    when (builder.upgradeController(builder.room.controller!!)) {
+                    val roomController = builder.room.controller
+                    when (builder.upgradeController(roomController!!)) {
                         ERR_NOT_IN_RANGE -> {
-                            builder.moveTo(builder.room.controller!!)
+                            builder.moveTo(roomController)
                         }
                     }
+                    builder.upgradeController(roomController)
                 } else {
                     if (builder.memory.constructionSiteID.isBlank()) {
                         val constructionSiteID = constructionSites[0].id

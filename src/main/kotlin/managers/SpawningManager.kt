@@ -5,6 +5,8 @@ import memory.job
 import memory.roomSpawnLocation
 import memory.sources
 import screeps.api.*
+import screeps.api.Game.constructionSites
+import screeps.utils.isNotEmpty
 import screeps.utils.unsafe.jsObject
 
 class SpawningManager {
@@ -131,6 +133,14 @@ class SpawningManager {
                 moveRatio = 1
                 workRatio = 1
             }
+            JobType.UPGRADER.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
+                carryRatio = 1
+                moveRatio = 1
+                workRatio = 1
+            }
             JobType.BUILDER.name -> {
                 maxWork = 1
                 maxCarry = 1
@@ -169,6 +179,10 @@ class SpawningManager {
                 return JobType.HARVESTER.name
             }
         }
+            val activeUpgrader = currentRoom.find(FIND_MY_CREEPS).filter { it.memory.job == JobType.UPGRADER.name }
+            if (activeUpgrader.isEmpty()) {
+                return JobType.UPGRADER.name
+            }
         val constructionSites = currentRoom.find(FIND_MY_CONSTRUCTION_SITES)
         if (constructionSites.isNotEmpty()){
             val activeBuilders = currentRoom.find(FIND_MY_CREEPS).filter { it.memory.job == JobType.BUILDER.name }
@@ -182,10 +196,10 @@ class SpawningManager {
     /**
      * Checks to see if worker is null and increases worker number
      */
-    fun increaseWorkerNameNumber(): String {
+    fun generateNewCreepNameByJobType(jobName: String): String {
         var workerNumber = 1
         while (true) {
-            val workerName = "Worker $workerNumber"
+            val workerName = "$jobName $workerNumber"
             val nameChecker: Creep? = Game.creeps[workerName]
             if (nameChecker == null) {
                 return workerName
