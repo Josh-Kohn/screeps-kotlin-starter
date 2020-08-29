@@ -25,7 +25,8 @@ fun loop() {
     InitiliazationManager(myRoom)
 
     val creepMemories = deleteCreepsFromMemory()
-    updateCreepCounter(creepMemories,myRoom)
+    val jobHarvester = JobType.HARVESTER
+    updateHarvesterCreepCounter(creepMemories,myRoom,jobHarvester)
 
     for (room in myRoom){
         val spawnManager = SpawningManager()
@@ -133,15 +134,17 @@ fun deleteCreepsFromMemory():List<CreepMemory>{
 /**
  * Find all creep counters in memory and updates them based on dead creeps
  */
-fun updateCreepCounter(memories: List<CreepMemory>, rooms: List<Room>) {
+fun updateHarvesterCreepCounter(memories: List<CreepMemory>, rooms: List<Room>, jobType: JobType) {
     for (memory in memories) {
-        val deadCreepSource = memory.sourceIDAssignment
-        val deadCreepRoom = memory.roomSpawnLocation
-        for (room in rooms){
-            if (deadCreepRoom == room.name) {
-                for (roomSource in room.memory.sources) {
-                    if (deadCreepSource == roomSource.sourceID) {
-                        roomSource.currentHarvesterCreeps -=1
+        if (jobType == JobType.HARVESTER) {
+            val deadCreepSource = memory.sourceIDAssignment
+            val deadCreepRoom = memory.roomSpawnLocation
+            for (room in rooms) {
+                if (deadCreepRoom == room.name) {
+                    for (roomSource in room.memory.sources) {
+                        if (deadCreepSource == roomSource.sourceID) {
+                            roomSource.currentHarvesterCreeps -= 1
+                        }
                     }
                 }
             }
