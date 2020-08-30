@@ -47,6 +47,12 @@ fun loop() {
     val upgraderCreepManager = UpgradeCreepManager(findAllUpgraderCreeps())
     upgraderCreepManager.upgradeRoomController()
 
+    if (Game.time == 20000){
+        console.log("Room Controller Level at ${Game.rooms["sim"]!!.controller!!.level}")
+        console.log("Current Progress at ${Game.rooms["sim"]!!.controller!!.progress}")
+        Game.notify("Game Controller at ${Game.rooms["sim"]!!.controller!!.level} and Current Progress at ${Game.rooms["sim"]!!.controller!!.progress}")
+    }
+
 }
 
 /**
@@ -123,7 +129,6 @@ fun deleteCreepsFromMemory():List<CreepMemory>{
     for(deadCreep in Memory.creeps.keys){
         val creepCheck = Game.creeps[deadCreep]
         if (creepCheck == null){
-            console.log("Deleting Creep $deadCreep")
             deadCreepList.add(Memory.creeps[deadCreep]!!)
             delete(Memory.creeps[deadCreep])
         }

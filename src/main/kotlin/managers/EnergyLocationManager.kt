@@ -13,7 +13,6 @@ interface EnergyLocationManager {
         for (availableSource in sources){
             if (availableSource.currentHarvesterCreeps < availableSource.maxHarvesterCreeps){
                 availableSource.currentHarvesterCreeps += 1
-                console.log("Adding Creep to Source ID ${availableSource.sourceID}")
                 return availableSource.sourceID
             }
         }

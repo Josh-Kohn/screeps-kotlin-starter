@@ -95,7 +95,6 @@ class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManage
                 //Gets the creep to harvest source
                 if (creep.memory.sourceIDAssignment.isBlank()){
                     val roomName = creep.memory.roomSpawnLocation
-                    console.log("Assigning Creep ${creep.name} to source")
                     creep.memory.sourceIDAssignment = assignHarvesterToSourceID(roomName) ?: ""
                 } else {
                     val getSource = Game.getObjectById<Source>(creep.memory.sourceIDAssignment)!!
