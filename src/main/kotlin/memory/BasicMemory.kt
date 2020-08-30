@@ -14,6 +14,7 @@ var CreepMemory.job: String by memory {JobType.IDLE.name}
 var CreepMemory.roomSpawnLocation: String by memory {""}
 var CreepMemory.sourceIDAssignment: String by memory {""}
 var CreepMemory.fullOfEnergy: Boolean by memory { false }
+var CreepMemory.withdrawID: String by memory {""}
 var CreepMemory.depositID: String by memory {""}
 var CreepMemory.constructionSiteID: String by memory {""}
 

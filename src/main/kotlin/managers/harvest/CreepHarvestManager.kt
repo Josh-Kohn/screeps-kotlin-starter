@@ -11,24 +11,31 @@ import screeps.api.*
 class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManager, CreepStateManager() {
 
     private fun pickADepot(roomName: String): String? {
-        val potentialDepot = Game.rooms[roomName]!!.find(FIND_STRUCTURES, options {
+
+        //Find Spawners and Extensions that need energy
+        val spawnsAndExtensions = Game.rooms[roomName]!!.find(FIND_STRUCTURES, options {
             filter = {
-                (it.structureType == STRUCTURE_CONTAINER
-                        || it.structureType == STRUCTURE_STORAGE
-                        || it.structureType == STRUCTURE_SPAWN
-                        || it.structureType == STRUCTURE_EXTENSION)
+                (it.structureType == STRUCTURE_SPAWN || it.structureType == STRUCTURE_EXTENSION)
+                        && (it as StoreOwner).store.getFreeCapacity(RESOURCE_ENERGY) > 0
             }
         }) as Array<StoreOwner>
-        //Checks to see if potentialDepot list is empty
-        if(potentialDepot.isEmpty()){
-            return null
+        spawnsAndExtensions.sortBy { (it as StoreOwner).store.getUsedCapacity(RESOURCE_ENERGY)}
+        if (spawnsAndExtensions.isNotEmpty()){
+            return spawnsAndExtensions[0].id
         }
-        val availableDepots = potentialDepot.filter { it.store.getFreeCapacity(RESOURCE_ENERGY) > 0 }
-        if(availableDepots.isEmpty()){
-            return null
+
+        //Find containers and Storage that need energy
+        val containersAndStorages = Game.rooms[roomName]!!.find(FIND_STRUCTURES, options {
+            filter = {
+                (it.structureType == STRUCTURE_CONTAINER || it.structureType == STRUCTURE_STORAGE)
+                        && (it as StoreOwner).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            }
+        }) as Array<StoreOwner>
+        containersAndStorages.sortBy { (it as StoreOwner).store.getUsedCapacity(RESOURCE_ENERGY)}
+        if (containersAndStorages.isNotEmpty()){
+            return containersAndStorages[0].id
         }
-        val sortedDepots = availableDepots.sortedBy { it.store.getUsedCapacity(RESOURCE_ENERGY) }
-        return sortedDepots[0].id
+        return null
     }
 
 
@@ -40,6 +47,35 @@ class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManage
                 if (creep.memory.depositID.isBlank()){
                     val roomName = creep.memory.roomSpawnLocation
                     creep.memory.depositID = pickADepot(roomName) ?: ""
+                    if (creep.memory.depositID.isBlank()){
+                        val constructionSites = Game.rooms[creep.memory.roomSpawnLocation]!!.find(FIND_CONSTRUCTION_SITES)
+                        if (constructionSites.isEmpty()) {
+                            val roomController = creep.room.controller
+                            when (creep.upgradeController(roomController!!)) {
+                                ERR_NOT_IN_RANGE -> {
+                                    creep.moveTo(roomController)
+                                }
+                            }
+                            creep.upgradeController(roomController)
+                        } else {
+                            if (creep.memory.constructionSiteID.isBlank()) {
+                                val constructionSiteID = constructionSites[0].id
+                                creep.memory.constructionSiteID = constructionSiteID
+                            } else {
+                                val building = Game.getObjectById<ConstructionSite>(creep.memory.constructionSiteID)
+                                //Game's getObjectById function gets you an object from the id you give it if the object exists (in this case, builder.memory.constructionSiteId)
+                                if (building == null) {
+                                    creep.memory.constructionSiteID = ""
+                                } else {
+                                    when (creep.build(building)) {
+                                        ERR_NOT_IN_RANGE -> {
+                                            creep.moveTo(building.pos)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 } else {
                     val getDepot = Game.getObjectById<StoreOwner>(creep.memory.depositID)
                     if (getDepot != null) {
@@ -59,6 +95,7 @@ class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManage
                 //Gets the creep to harvest source
                 if (creep.memory.sourceIDAssignment.isBlank()){
                     val roomName = creep.memory.roomSpawnLocation
+                    console.log("Assigning Creep ${creep.name} to source")
                     creep.memory.sourceIDAssignment = assignHarvesterToSourceID(roomName) ?: ""
                 } else {
                     val getSource = Game.getObjectById<Source>(creep.memory.sourceIDAssignment)!!

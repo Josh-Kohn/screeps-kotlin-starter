@@ -175,18 +175,22 @@ class SpawningManager {
     fun findJob(currentRoom: Room): String {
         val memories = currentRoom.memory.sources
         for (sourceMemory in memories) {
+            console.log(sourceMemory.currentHarvesterCreeps < sourceMemory.maxHarvesterCreeps)
             if (sourceMemory.currentHarvesterCreeps < sourceMemory.maxHarvesterCreeps) {
+                console.log("Harvester Needed")
                 return JobType.HARVESTER.name
             }
         }
             val activeUpgrader = currentRoom.find(FIND_MY_CREEPS).filter { it.memory.job == JobType.UPGRADER.name }
             if (activeUpgrader.isEmpty()) {
+                console.log("Upgrader Needed")
                 return JobType.UPGRADER.name
             }
         val constructionSites = currentRoom.find(FIND_MY_CONSTRUCTION_SITES)
         if (constructionSites.isNotEmpty()){
             val activeBuilders = currentRoom.find(FIND_MY_CREEPS).filter { it.memory.job == JobType.BUILDER.name }
             if (activeBuilders.size < 2) {
+                console.log("Builder Needed")
                 return JobType.BUILDER.name
             }
         }

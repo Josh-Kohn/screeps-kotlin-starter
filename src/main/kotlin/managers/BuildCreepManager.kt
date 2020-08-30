@@ -16,6 +16,8 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
             energyManagement(builder)
             if (builder.memory.fullOfEnergy) {
                 freeSlotToTrue(homeRoom, builder.memory.sourceIDAssignment)
+                builder.memory.withdrawID = ""
+                builder.memory.sourceIDAssignment = ""
                 val constructionSites = homeRoom.find(FIND_CONSTRUCTION_SITES)
                 if (constructionSites.isEmpty()) {
                     val roomController = builder.room.controller
@@ -44,19 +46,34 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                     }
                 }
             } else {
-                //Builder Creep has no energy, go find a source and harvest
-                if (builder.memory.sourceIDAssignment.isBlank()){
-                    builder.memory.sourceIDAssignment = getFreeSourceID(homeRoom.name) ?: ""
+                if (builder.memory.withdrawID.isBlank()){
+                    builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
+                    if (builder.memory.withdrawID.isBlank()) {
+                        //Builder Creep has no energy, go find a source and harvest
+                        if (builder.memory.sourceIDAssignment.isBlank()) {
+                            builder.memory.sourceIDAssignment = getFreeSourceID(homeRoom.name) ?: ""
+                        } else {
+                            val getSource = Game.getObjectById<Source>(builder.memory.sourceIDAssignment)!!
+                            when (builder.harvest(getSource)) {
+                                ERR_NOT_IN_RANGE -> {
+                                    builder.moveTo(getSource)
+                                }
+                            }
+                        }
+                    }
                 } else {
-                    val getSource = Game.getObjectById<Source>(builder.memory.sourceIDAssignment)!!
-                    when (builder.harvest(getSource)) {
-                        ERR_NOT_IN_RANGE -> {
-                            builder.moveTo(getSource)
+                    val getContainer = Game.getObjectById<StoreOwner>(builder.memory.withdrawID)
+                    if (getContainer == null){
+                        builder.memory.withdrawID = ""
+                    } else {
+                        when (builder.withdraw(getContainer, RESOURCE_ENERGY)){
+                            ERR_NOT_IN_RANGE -> {
+                                builder.moveTo(getContainer)
+                            }
                         }
                     }
                 }
             }
-
         }
     }
 }

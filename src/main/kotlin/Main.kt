@@ -25,8 +25,7 @@ fun loop() {
     InitiliazationManager(myRoom)
 
     val creepMemories = deleteCreepsFromMemory()
-    val jobHarvester = JobType.HARVESTER
-    updateHarvesterCreepCounter(creepMemories,myRoom,jobHarvester)
+    updateSourceMemory(creepMemories,myRoom)
 
     for (room in myRoom){
         val spawnManager = SpawningManager()
@@ -124,6 +123,7 @@ fun deleteCreepsFromMemory():List<CreepMemory>{
     for(deadCreep in Memory.creeps.keys){
         val creepCheck = Game.creeps[deadCreep]
         if (creepCheck == null){
+            console.log("Deleting Creep $deadCreep")
             deadCreepList.add(Memory.creeps[deadCreep]!!)
             delete(Memory.creeps[deadCreep])
         }
@@ -134,16 +134,33 @@ fun deleteCreepsFromMemory():List<CreepMemory>{
 /**
  * Find all creep counters in memory and updates them based on dead creeps
  */
-fun updateHarvesterCreepCounter(memories: List<CreepMemory>, rooms: List<Room>, jobType: JobType) {
+fun updateSourceMemory(memories: List<CreepMemory>, rooms: List<Room>) {
     for (memory in memories) {
-        if (jobType == JobType.HARVESTER) {
-            val deadCreepSource = memory.sourceIDAssignment
-            val deadCreepRoom = memory.roomSpawnLocation
-            for (room in rooms) {
-                if (deadCreepRoom == room.name) {
-                    for (roomSource in room.memory.sources) {
-                        if (deadCreepSource == roomSource.sourceID) {
-                            roomSource.currentHarvesterCreeps -= 1
+        when (memory.job) {
+            JobType.HARVESTER.name -> {
+                val deadCreepSource = memory.sourceIDAssignment
+                val deadCreepRoom = memory.roomSpawnLocation
+                for (room in rooms) {
+                    if (deadCreepRoom == room.name) {
+                        for (roomSource in room.memory.sources) {
+                            if (deadCreepSource == roomSource.sourceID) {
+                                roomSource.currentHarvesterCreeps -= 1
+                            }
+                        }
+                    }
+                }
+            }
+            JobType.UPGRADER.name, JobType.BUILDER.name -> {
+                if(memory.sourceIDAssignment.isNotBlank()){
+                    val deadCreepSource = memory.sourceIDAssignment
+                    val deadCreepRoom = memory.roomSpawnLocation
+                    for (room in rooms) {
+                        if (deadCreepRoom == room.name) {
+                            for (roomSource in room.memory.sources) {
+                                if (deadCreepSource == roomSource.sourceID) {
+                                    roomSource.freeCreepSlot = true
+                                }
+                            }
                         }
                     }
                 }
