@@ -52,7 +52,14 @@ fun loop() {
     }
 
     val towerManager = TowerManager(findTowers(myRooms))
-    towerManager.towerDefenseProtocol()
+    if (!towerManager.towerDefenseProtocol())
+        towerManager.towerRepairProtocol(myRooms,findTowers(myRooms))
+
+    // Pixels! If we have enough banked CPU. CPU bucket max is 10k
+    if (Game.cpu.bucket >= 10000 - 100) {
+        console.log("Generating Pixel")
+        Game.cpu.generatePixel()
+    }
 }
 
 /**
@@ -125,8 +132,10 @@ fun findAllUpgraderCreeps(): MutableList<Creep> {
  * Compares Creeps in memory to game.creeps, isolates "dead" creeps lingering in memory and removes them
  */
 fun deleteCreepsFromMemory():List<CreepMemory>{
+    if (Game.creeps.values.isEmpty()) return listOf()
+
     val deadCreepList = mutableListOf<CreepMemory>()
-    for(deadCreep in Memory.creeps.keys){
+    for((deadCreep,_) in Memory.creeps){
         val creepCheck = Game.creeps[deadCreep]
         if (creepCheck == null){
             deadCreepList.add(Memory.creeps[deadCreep]!!)
@@ -192,3 +201,4 @@ fun findTowers(myRooms: MutableList<Room>): List<StructureTower>{
     }
     return towers
 }
+
