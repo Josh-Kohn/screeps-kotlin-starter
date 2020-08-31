@@ -1,9 +1,6 @@
 import managers.harvest.CreepHarvestManager
 import job.JobType
-import managers.BuildCreepManager
-import managers.InitiliazationManager
-import managers.SpawningManager
-import managers.UpgradeCreepManager
+import managers.*
 import memory.job
 import memory.roomSpawnLocation
 import memory.sourceIDAssignment
@@ -11,6 +8,7 @@ import memory.sources
 import screeps.api.Game
 import screeps.api.get
 import screeps.api.*
+import screeps.api.structures.StructureTower
 import screeps.utils.unsafe.delete
 
 /**
@@ -21,13 +19,13 @@ import screeps.utils.unsafe.delete
  */
 @Suppress("unused")
 fun loop() {
-    val myRoom = getMyRooms()
-    InitiliazationManager(myRoom)
+    val myRooms = getMyRooms()
+    InitiliazationManager(myRooms)
 
     val creepMemories = deleteCreepsFromMemory()
-    updateSourceMemory(creepMemories,myRoom)
+    updateSourceMemory(creepMemories,myRooms)
 
-    for (room in myRoom){
+    for (room in myRooms){
         val spawnManager = SpawningManager()
         val findAJob = spawnManager.findJob(room)
         if(findAJob != JobType.IDLE.name) {
@@ -53,6 +51,8 @@ fun loop() {
         Game.notify("Game Controller at ${Game.rooms["sim"]!!.controller!!.level} and Current Progress at ${Game.rooms["sim"]!!.controller!!.progress}")
     }
 
+    val towerManager = TowerManager(findTowers(myRooms))
+    towerManager.towerDefenseProtocol()
 }
 
 /**
@@ -184,3 +184,11 @@ fun needHarvesterCreep(currentRoom: Room):Boolean {
     return false
 }
 
+fun findTowers(myRooms: MutableList<Room>): List<StructureTower>{
+    val towers = mutableListOf<StructureTower>()
+    for(room in myRooms) {
+        val foundTowers = room.find(FIND_MY_STRUCTURES).filter { (it.structureType == STRUCTURE_TOWER) }
+        towers.addAll(foundTowers as List<StructureTower>)
+    }
+    return towers
+}

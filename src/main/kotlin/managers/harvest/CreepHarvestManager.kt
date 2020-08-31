@@ -15,7 +15,7 @@ class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManage
         //Find Spawners and Extensions that need energy
         val spawnsAndExtensions = Game.rooms[roomName]!!.find(FIND_STRUCTURES, options {
             filter = {
-                (it.structureType == STRUCTURE_SPAWN || it.structureType == STRUCTURE_EXTENSION)
+                (it.structureType == STRUCTURE_SPAWN || it.structureType == STRUCTURE_EXTENSION || it.structureType == STRUCTURE_TOWER)
                         && (it as StoreOwner).store.getFreeCapacity(RESOURCE_ENERGY) > 0
             }
         }) as Array<StoreOwner>
