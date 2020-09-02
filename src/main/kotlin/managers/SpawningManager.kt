@@ -20,6 +20,7 @@ class SpawningManager {
                 spawner.spawnCreep(workParameter, workerName, options { memory = jsObject<CreepMemory> {
                     this.roomSpawnLocation = spawner.pos.roomName
                     this.job = jobType
+                    console.log("Creating Creep with body $workParameter")
                 }
                 })
                 break
@@ -126,27 +127,27 @@ class SpawningManager {
 
         when (creepJob){
             JobType.HARVESTER.name -> {
-                maxWork = 1
+                maxWork = 2
                 maxCarry = 1
-                maxMove = 1
+                maxMove = 2
                 carryRatio = 1
-                moveRatio = 1
-                workRatio = 1
+                moveRatio = 2
+                workRatio = 2
             }
             JobType.UPGRADER.name -> {
-                maxWork = 1
+                maxWork = 3
                 maxCarry = 1
-                maxMove = 1
-                carryRatio = 1
-                moveRatio = 1
+                maxMove = 2
+                carryRatio = 3
+                moveRatio = 2
                 workRatio = 1
             }
             JobType.BUILDER.name -> {
                 maxWork = 1
                 maxCarry = 1
-                maxMove = 1
+                maxMove = 2
                 carryRatio = 1
-                moveRatio = 1
+                moveRatio = 2
                 workRatio = 1
             }
             else -> {
@@ -157,8 +158,8 @@ class SpawningManager {
                 moveRatio = 1
                 workRatio = 1
             }
-
         }
+        //TODO If check here for generating a creep under the condition that no creeps are present
         return generateBodyByRatio(maxEnergy = currentRoom.energyCapacityAvailable,
                 maxWork = maxWork,
                 maxCarry = maxCarry,
@@ -176,17 +177,20 @@ class SpawningManager {
         val memories = currentRoom.memory.sources
         for (sourceMemory in memories) {
             if (sourceMemory.currentHarvesterCreeps < sourceMemory.maxHarvesterCreeps) {
+                console.log("Harvester Needed")
                 return JobType.HARVESTER.name
             }
         }
             val activeUpgrader = currentRoom.find(FIND_MY_CREEPS).filter { it.memory.job == JobType.UPGRADER.name }
             if (activeUpgrader.isEmpty()) {
+                console.log("Upgrader Needed")
                 return JobType.UPGRADER.name
             }
         val constructionSites = currentRoom.find(FIND_MY_CONSTRUCTION_SITES)
         if (constructionSites.isNotEmpty()){
             val activeBuilders = currentRoom.find(FIND_MY_CREEPS).filter { it.memory.job == JobType.BUILDER.name }
             if (activeBuilders.size < 2) {
+                console.log("Builder Needed")
                 return JobType.BUILDER.name
             }
         }
