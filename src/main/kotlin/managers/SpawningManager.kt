@@ -135,12 +135,12 @@ class SpawningManager {
                 workRatio = 2
             }
             JobType.UPGRADER.name -> {
-                maxWork = 3
+                maxWork = 2
                 maxCarry = 1
                 maxMove = 2
-                carryRatio = 3
+                carryRatio = 1
                 moveRatio = 2
-                workRatio = 1
+                workRatio = 2
             }
             JobType.BUILDER.name -> {
                 maxWork = 1
