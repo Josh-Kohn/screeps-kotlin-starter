@@ -133,12 +133,13 @@ class SpawningManager {
                 carryRatio = 1
                 moveRatio = 2
                 workRatio = 2
+                //Max efficiency is 5 work on a source
             }
             JobType.UPGRADER.name -> {
                 maxWork = 2
-                maxCarry = 1
+                maxCarry = 2
                 maxMove = 2
-                carryRatio = 1
+                carryRatio = 2
                 moveRatio = 2
                 workRatio = 2
             }

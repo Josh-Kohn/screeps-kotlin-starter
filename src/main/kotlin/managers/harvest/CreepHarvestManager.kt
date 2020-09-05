@@ -79,12 +79,16 @@ class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManage
                 } else {
                     val getDepot = Game.getObjectById<StoreOwner>(creep.memory.depositID)
                     if (getDepot != null) {
-                        when (creep.transfer(getDepot, RESOURCE_ENERGY)) {
-                            ERR_NOT_IN_RANGE -> {
-                                creep.moveTo(getDepot)
-                            }
-                            ERR_FULL -> {
-                                creep.memory.depositID = ""
+                        if (getDepot.store.getFreeCapacity(RESOURCE_ENERGY) == 0){
+                            creep.memory.depositID = ""
+                        } else {
+                            when (creep.transfer(getDepot, RESOURCE_ENERGY)) {
+                                ERR_NOT_IN_RANGE -> {
+                                    creep.moveTo(getDepot)
+                                }
+                                ERR_FULL -> {
+                                    creep.memory.depositID = ""
+                                }
                             }
                         }
                     } else {

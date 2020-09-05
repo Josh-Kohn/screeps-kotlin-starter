@@ -52,9 +52,9 @@ fun loop() {
     }
 
     val towerManager = TowerManager(findTowers(myRooms))
-    if (!towerManager.towerDefenseProtocol())
-        towerManager.towerRepairProtocol(myRooms,findTowers(myRooms))
-
+    if (!towerManager.towerDefenseProtocol()) {
+        towerManager.towerRepairProtocol(myRooms, findTowers(myRooms))
+    }
     // Pixels! If we have enough banked CPU. CPU bucket max is 10k
     if (Game.cpu.bucket >= 10000 - 100) {
         console.log("Generating Pixel")
@@ -159,21 +159,6 @@ fun updateSourceMemory(memories: List<CreepMemory>, rooms: List<Room>) {
                         for (roomSource in room.memory.sources) {
                             if (deadCreepSource == roomSource.sourceID) {
                                 roomSource.currentHarvesterCreeps -= 1
-                            }
-                        }
-                    }
-                }
-            }
-            JobType.UPGRADER.name, JobType.BUILDER.name -> {
-                if(memory.sourceIDAssignment.isNotBlank()){
-                    val deadCreepSource = memory.sourceIDAssignment
-                    val deadCreepRoom = memory.roomSpawnLocation
-                    for (room in rooms) {
-                        if (deadCreepRoom == room.name) {
-                            for (roomSource in room.memory.sources) {
-                                if (deadCreepSource == roomSource.sourceID) {
-                                    roomSource.freeCreepSlot = true
-                                }
                             }
                         }
                     }

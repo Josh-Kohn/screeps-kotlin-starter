@@ -17,7 +17,6 @@ class UpgradeCreepManager(private val creeps:List<Creep>): EnergyLocationManager
             val homeRoom = Game.rooms[upgrader.pos.roomName]!!
             energyManagement(upgrader)
             if (upgrader.memory.fullOfEnergy) {
-                freeSlotToTrue(homeRoom, upgrader.memory.sourceIDAssignment)
                 upgrader.memory.withdrawID = ""
                 upgrader.memory.sourceIDAssignment = ""
                 val roomController = upgrader.room.controller

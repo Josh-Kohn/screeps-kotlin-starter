@@ -21,15 +21,12 @@ interface EnergyLocationManager {
 
     fun getFreeSourceID(roomName: String): String? {
         val sources = Game.rooms[roomName]!!.memory.sources
-        for (source in sources){
-            if(source.freeCreepSlot == true){
-                source.freeCreepSlot = false
-                return source.sourceID
-            }
+        if(sources.isNotEmpty()){
+            return sources.random().sourceID
         }
         return null
     }
-
+/*
     fun freeSlotToTrue(room: Room, returnSourceID: String){
         val sources = room.memory.sources
         for (source in sources){
@@ -38,6 +35,8 @@ interface EnergyLocationManager {
             }
         }
     }
+    Deprecated for future upgrades
+*/
 
     fun getHighestCapacityContainerID(roomName: String): String?{
         val containers = Game.rooms[roomName]!!.find(FIND_STRUCTURES, options { filter = {

@@ -15,7 +15,6 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
             val homeRoom = Game.rooms[builder.pos.roomName]!!
             energyManagement(builder)
             if (builder.memory.fullOfEnergy) {
-                freeSlotToTrue(homeRoom, builder.memory.sourceIDAssignment)
                 builder.memory.withdrawID = ""
                 builder.memory.sourceIDAssignment = ""
                 val constructionSites = homeRoom.find(FIND_CONSTRUCTION_SITES)
