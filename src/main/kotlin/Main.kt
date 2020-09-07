@@ -20,7 +20,8 @@ import screeps.utils.unsafe.delete
 @Suppress("unused")
 fun loop() {
     val myRooms = getMyRooms()
-    InitiliazationManager(myRooms)
+    val initializationManager = InitializationManager(myRooms)
+    initializationManager.sourceContainerAssociation()
 
     val creepMemories = deleteCreepsFromMemory()
     updateSourceMemory(creepMemories,myRooms)
@@ -35,14 +36,17 @@ fun loop() {
         }
     }
 
-    val findHarvesterCreeps = findAllHarvesterCreeps()
+    val findHarvesterCreeps = findAllCreepsByJobType(JobType.HARVESTER.name)
     val creepHarvestManager = CreepHarvestManager(findHarvesterCreeps)
     creepHarvestManager.harvestSource()
 
-    val buildCreepManager = BuildCreepManager(findAllBuilderCreeps())
+    val findCourierCreeps = findAllCreepsByJobType(JobType.COURIER.name)
+    val courierCreepManager = CourierCreepManager(findCourierCreeps)
+
+    val buildCreepManager = BuildCreepManager(findAllCreepsByJobType(JobType.BUILDER.name))
     buildCreepManager.buildConstructionSites()
 
-    val upgraderCreepManager = UpgradeCreepManager(findAllUpgraderCreeps())
+    val upgraderCreepManager = UpgradeCreepManager(findAllCreepsByJobType(JobType.UPGRADER.name))
     upgraderCreepManager.upgradeRoomController()
 
     if (Game.time == 20000){
@@ -93,40 +97,19 @@ fun getMyRooms(): MutableList<Room> {
 
 
 /**
- * Finds all Harvester Creeps
+ * Finds all Creeps by JobType
  */
-fun findAllHarvesterCreeps(): MutableList<Creep> {
-    val harvesterCreeps: MutableList<Creep> = mutableListOf()
+
+fun findAllCreepsByJobType(jobType: String): MutableList<Creep> {
+    val creeps: MutableList<Creep> = mutableListOf()
     for(creep in Game.creeps.values){
-        if(creep.memory.job == JobType.HARVESTER.name){
-            harvesterCreeps.add(creep)
+        if(creep.memory.job == jobType){
+            creeps.add(creep)
         }
     }
-    return harvesterCreeps
+    return creeps
 }
 
-/**
- * Finds all Builder Creeps
- */
-fun findAllBuilderCreeps(): MutableList<Creep> {
-    val builderCreeps: MutableList<Creep> = mutableListOf()
-    for(creep in Game.creeps.values){
-        if(creep.memory.job == JobType.BUILDER.name){
-            builderCreeps.add(creep)
-        }
-    }
-    return builderCreeps
-}
-
-fun findAllUpgraderCreeps(): MutableList<Creep> {
-    val builderCreeps: MutableList<Creep> = mutableListOf()
-    for(creep in Game.creeps.values){
-        if(creep.memory.job == JobType.UPGRADER.name){
-            builderCreeps.add(creep)
-        }
-    }
-    return builderCreeps
-}
 
 /**
  * Compares Creeps in memory to game.creeps, isolates "dead" creeps lingering in memory and removes them
@@ -166,16 +149,6 @@ fun updateSourceMemory(memories: List<CreepMemory>, rooms: List<Room>) {
             }
         }
     }
-}
-
-fun needHarvesterCreep(currentRoom: Room):Boolean {
-    val memories = currentRoom.memory.sources
-    for (sourceMemory in memories){
-        if (sourceMemory.currentHarvesterCreeps < sourceMemory.maxHarvesterCreeps){
-            return true
-        }
-    }
-    return false
 }
 
 fun findTowers(myRooms: MutableList<Room>): List<StructureTower>{

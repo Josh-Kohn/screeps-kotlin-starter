@@ -10,32 +10,11 @@ import screeps.api.*
 
 class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManager, CreepStateManager() {
 
-    private fun pickADepot(roomName: String): String? {
+    private fun getContainerID(roomName: String): String? {
+        val containerIDS = Game.rooms[roomName]!!.memory.sources
+        for (containerID in containerIDS) {
 
-        //Find Spawners and Extensions that need energy
-        val spawnsAndExtensions = Game.rooms[roomName]!!.find(FIND_STRUCTURES, options {
-            filter = {
-                (it.structureType == STRUCTURE_SPAWN || it.structureType == STRUCTURE_EXTENSION || it.structureType == STRUCTURE_TOWER)
-                        && (it as StoreOwner).store.getFreeCapacity(RESOURCE_ENERGY) > 0
-            }
-        }) as Array<StoreOwner>
-        spawnsAndExtensions.sortBy { (it as StoreOwner).store.getUsedCapacity(RESOURCE_ENERGY)}
-        if (spawnsAndExtensions.isNotEmpty()){
-            return spawnsAndExtensions[0].id
         }
-
-        //Find containers and Storage that need energy
-        val containersAndStorages = Game.rooms[roomName]!!.find(FIND_STRUCTURES, options {
-            filter = {
-                (it.structureType == STRUCTURE_CONTAINER || it.structureType == STRUCTURE_STORAGE)
-                        && (it as StoreOwner).store.getFreeCapacity(RESOURCE_ENERGY) > 0
-            }
-        }) as Array<StoreOwner>
-        containersAndStorages.sortBy { (it as StoreOwner).store.getUsedCapacity(RESOURCE_ENERGY)}
-        if (containersAndStorages.isNotEmpty()){
-            return containersAndStorages[0].id
-        }
-        return null
     }
 
 
@@ -46,7 +25,7 @@ class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManage
             if(creep.memory.fullOfEnergy){
                 if (creep.memory.depositID.isBlank()){
                     val roomName = creep.memory.roomSpawnLocation
-                    creep.memory.depositID = pickADepot(roomName) ?: ""
+                    creep.memory.depositID = getContainerID(roomName) ?: ""
                     if (creep.memory.depositID.isBlank()){
                         val constructionSites = Game.rooms[creep.memory.roomSpawnLocation]!!.find(FIND_CONSTRUCTION_SITES)
                         if (constructionSites.isEmpty()) {

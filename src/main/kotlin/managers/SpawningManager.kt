@@ -127,29 +127,37 @@ class SpawningManager {
 
         when (creepJob){
             JobType.HARVESTER.name -> {
-                maxWork = 2
+                maxWork = 3
                 maxCarry = 1
-                maxMove = 2
+                maxMove = 1
+                workRatio = 1
                 carryRatio = 1
-                moveRatio = 2
-                workRatio = 2
+                moveRatio = 1
                 //Max efficiency is 5 work on a source
+            }
+            JobType.COURIER.name -> {
+                maxWork = 0
+                maxCarry = 2
+                maxMove = 2
+                workRatio = 0
+                carryRatio = 1
+                moveRatio = 1
             }
             JobType.UPGRADER.name -> {
                 maxWork = 2
                 maxCarry = 2
                 maxMove = 2
-                carryRatio = 2
-                moveRatio = 2
-                workRatio = 2
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 1
             }
             JobType.BUILDER.name -> {
                 maxWork = 1
                 maxCarry = 1
                 maxMove = 2
+                workRatio = 1
                 carryRatio = 1
                 moveRatio = 2
-                workRatio = 1
             }
             else -> {
                 maxWork = 1
@@ -175,24 +183,46 @@ class SpawningManager {
      * Finds a job that needs doing
      */
     fun findJob(currentRoom: Room): String {
-        val memories = currentRoom.memory.sources
-        for (sourceMemory in memories) {
-            if (sourceMemory.currentHarvesterCreeps < sourceMemory.maxHarvesterCreeps) {
-                console.log("Harvester Needed")
+        //Write an if check to see if we have any harvester and courier creeps in the room
+        val roomCreeps = currentRoom.find(FIND_MY_CREEPS)
+        val harvestCreeps = roomCreeps.filter { it.memory.job == JobType.HARVESTER.name}
+        val courierCreeps = roomCreeps.filter { it.memory.job == JobType.COURIER.name}
+        when{
+            harvestCreeps.isEmpty() && courierCreeps.isEmpty() -> {
                 return JobType.HARVESTER.name
             }
-        }
-            val activeUpgrader = currentRoom.find(FIND_MY_CREEPS).filter { it.memory.job == JobType.UPGRADER.name }
-            if (activeUpgrader.isEmpty()) {
-                console.log("Upgrader Needed")
-                return JobType.UPGRADER.name
+            harvestCreeps.isNotEmpty() && courierCreeps.isEmpty() -> {
+                return JobType.COURIER.name
             }
-        val constructionSites = currentRoom.find(FIND_MY_CONSTRUCTION_SITES)
-        if (constructionSites.isNotEmpty()){
-            val activeBuilders = currentRoom.find(FIND_MY_CREEPS).filter { it.memory.job == JobType.BUILDER.name }
-            if (activeBuilders.size < 2) {
-                console.log("Builder Needed")
-                return JobType.BUILDER.name
+            harvestCreeps.isEmpty() && courierCreeps.isNotEmpty() -> {
+                return JobType.HARVESTER.name
+            }
+            else -> {
+                val memories = currentRoom.memory.sources
+                for (sourceMemory in memories) {
+                    if (sourceMemory.currentHarvesterCreeps < sourceMemory.maxHarvesterCreeps) {
+                        console.log("Harvester Needed")
+                        return JobType.HARVESTER.name
+                    }
+                }
+                val couriersNeeded = memories.size + 1
+                //+ 1 because of room controller
+                if (courierCreeps.size < couriersNeeded) {
+                    return JobType.COURIER.name
+                }
+                val activeUpgrader = roomCreeps.filter { it.memory.job == JobType.UPGRADER.name }
+                if (activeUpgrader.isEmpty()) {
+                    console.log("Upgrader Needed")
+                    return JobType.UPGRADER.name
+                }
+                val constructionSites = currentRoom.find(FIND_MY_CONSTRUCTION_SITES)
+                if (constructionSites.isNotEmpty()) {
+                    val activeBuilders = roomCreeps.filter { it.memory.job == JobType.BUILDER.name }
+                    if (activeBuilders.size < 2) {
+                        console.log("Builder Needed")
+                        return JobType.BUILDER.name
+                    }
+                }
             }
         }
         return JobType.IDLE.name
@@ -214,5 +244,4 @@ class SpawningManager {
             }
         }
     }
-
 }
