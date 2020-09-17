@@ -47,7 +47,7 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
             } else {
                 if (builder.memory.withdrawID.isBlank()){
                     builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
-                    if (builder.memory.withdrawID.isBlank()) {
+                    /*if (builder.memory.withdrawID.isBlank()) {
                         //Builder Creep has no energy, go find a source and harvest
                         if (builder.memory.sourceIDAssignment.isBlank()) {
                             builder.memory.sourceIDAssignment = getFreeSourceID(homeRoom.name) ?: ""
@@ -59,7 +59,7 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                                 }
                             }
                         }
-                    }
+                    }*/
                 } else {
                     val getContainer = Game.getObjectById<StoreOwner>(builder.memory.withdrawID)
                     if (getContainer == null){

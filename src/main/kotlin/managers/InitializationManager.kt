@@ -32,7 +32,11 @@ class InitializationManager(val rooms: List<Room> ) {
                     val sourceID = source.sourceID
                     val sourceObject = Game.getObjectById<Source>(sourceID)!!
 
-                    val lookResult = room.lookAtAreaAsArray(sourceObject.pos.y - 2, sourceObject.pos.x - 2, sourceObject.pos.y + 2, sourceObject.pos.x + 2)
+                    val lookResult = room.lookAtAreaAsArray(
+                            sourceObject.pos.y - 2,
+                            sourceObject.pos.x - 2,
+                            sourceObject.pos.y + 2,
+                            sourceObject.pos.x + 2)
                     val containersLookResult = lookResult.filter { it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_CONTAINER }
 
                     val findContainers = containersLookResult.map { (it.structure as StructureContainer) }
@@ -46,8 +50,9 @@ class InitializationManager(val rooms: List<Room> ) {
                         }
                     }
                 } else {
-                    if (Game.getObjectById<StructureContainer>(source.containerID) == null)
+                    if (Game.getObjectById<StructureContainer>(source.containerID) == null) {
                         source.containerID = ""
+                    }
                 }
             }
         }

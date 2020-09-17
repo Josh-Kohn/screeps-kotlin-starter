@@ -17,7 +17,8 @@ var CreepMemory.fullOfEnergy: Boolean by memory { false }
 var CreepMemory.withdrawID: String by memory {""}
 var CreepMemory.depositID: String by memory {""}
 var CreepMemory.constructionSiteID: String by memory {""}
-
+var CreepMemory.dropSpot: RoomPosition by memory {RoomPosition(0,0,"roomName")}
+var CreepMemory.droppedID: String by memory {""}
 
 /* Rest of the persistent memory structures.
 * These set an unused test variable to 0. This is done to illustrate the how to add variables to
