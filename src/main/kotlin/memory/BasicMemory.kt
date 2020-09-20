@@ -1,6 +1,7 @@
 package memory
 
 import job.JobType
+import objects.ConstructionDataObject
 import objects.SourceDataObject
 import screeps.api.*
 import screeps.utils.memory.memory
@@ -8,6 +9,10 @@ import screeps.utils.memory.memory
 /* Add the variables that you want to store to the persistent memory for each object type.
 * They can be accessed by using the .memory attribute of any of the instances of that class
 * i.e. creep.memory.building = true */
+
+/* Arbitrary Memory */
+
+var GlobalMemory.constructionDataObjects: Array<ConstructionDataObject> by memory { arrayOf<ConstructionDataObject>() }
 
 /* Creep.memory */
 var CreepMemory.job: String by memory {JobType.IDLE.name}

@@ -17,8 +17,17 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
             if (builder.memory.fullOfEnergy) {
                 builder.memory.withdrawID = ""
                 builder.memory.sourceIDAssignment = ""
-                val constructionSites = homeRoom.find(FIND_CONSTRUCTION_SITES)
-                if (constructionSites.isEmpty()) {
+
+                var constructionSiteID = ""
+                for (constructionDataObject in Memory.constructionDataObjects){
+                    if(constructionDataObject.roomOwner == homeRoom.name){
+                        constructionSiteID = constructionDataObject.constructionSiteID
+                        break
+                    }
+                }
+
+
+                if (constructionSiteID.isBlank()) {
                     val roomController = builder.room.controller
                     when (builder.upgradeController(roomController!!)) {
                         ERR_NOT_IN_RANGE -> {
@@ -28,7 +37,6 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                     builder.upgradeController(roomController)
                 } else {
                     if (builder.memory.constructionSiteID.isBlank()) {
-                        val constructionSiteID = constructionSites[0].id
                         builder.memory.constructionSiteID = constructionSiteID
                     } else {
                         val building = Game.getObjectById<ConstructionSite>(builder.memory.constructionSiteID)

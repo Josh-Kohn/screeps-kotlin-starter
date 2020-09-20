@@ -1,10 +1,7 @@
 import managers.harvest.CreepHarvestManager
 import job.JobType
 import managers.*
-import memory.job
-import memory.roomSpawnLocation
-import memory.sourceIDAssignment
-import memory.sources
+import memory.*
 import screeps.api.Game
 import screeps.api.get
 import screeps.api.*
@@ -23,8 +20,11 @@ fun loop() {
     val initializationManager = InitializationManager(myRooms)
     initializationManager.sourceContainerAssociation()
 
+
+    val updateMemory= MemoryUpdater()
     val creepMemories = deleteCreepsFromMemory()
-    updateSourceMemory(creepMemories,myRooms)
+    updateMemory.updateSourceMemory(creepMemories,myRooms)
+    updateMemory.updateConstructionMemory(myRooms)
 
     for (room in myRooms){
         val spawnManager = SpawningManager()
@@ -131,25 +131,7 @@ fun deleteCreepsFromMemory():List<CreepMemory>{
 /**
  * Find all creep counters in memory and updates them based on dead creeps
  */
-fun updateSourceMemory(memories: List<CreepMemory>, rooms: List<Room>) {
-    for (memory in memories) {
-        when (memory.job) {
-            JobType.HARVESTER.name -> {
-                val deadCreepSource = memory.sourceIDAssignment
-                val deadCreepRoom = memory.roomSpawnLocation
-                for (room in rooms) {
-                    if (deadCreepRoom == room.name) {
-                        for (roomSource in room.memory.sources) {
-                            if (deadCreepSource == roomSource.sourceID) {
-                                roomSource.currentHarvesterCreeps -= 1
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+
 
 fun findTowers(myRooms: MutableList<Room>): List<StructureTower>{
     val towers = mutableListOf<StructureTower>()

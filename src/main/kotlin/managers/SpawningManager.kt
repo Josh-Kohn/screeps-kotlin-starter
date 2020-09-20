@@ -1,6 +1,7 @@
 package managers
 
 import job.JobType
+import memory.constructionDataObjects
 import memory.job
 import memory.roomSpawnLocation
 import memory.sources
@@ -339,8 +340,14 @@ class SpawningManager {
                     console.log("Upgrader Needed")
                     return JobType.UPGRADER.name
                 }
-                val constructionSites = currentRoom.find(FIND_MY_CONSTRUCTION_SITES)
-                if (constructionSites.isNotEmpty()) {
+                var constructionSiteID = ""
+                for (constructionDataObject in Memory.constructionDataObjects){
+                    if(constructionDataObject.roomOwner == currentRoom.name){
+                        constructionSiteID = constructionDataObject.constructionSiteID
+                        break
+                    }
+                }
+                if (constructionSiteID.isNotBlank()) {
                     val activeBuilders = roomCreeps.filter { it.memory.job == JobType.BUILDER.name }
                     if (activeBuilders.size < 2) {
                         console.log("Builder Needed")
