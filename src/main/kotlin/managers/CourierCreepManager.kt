@@ -2,6 +2,7 @@ package managers
 
 import job.JobType
 import memory.*
+import objects.RoomPositionObject
 import objects.SourceDataObject
 import screeps.api.*
 import screeps.api.structures.StructureContainer
@@ -9,7 +10,6 @@ import screeps.api.structures.StructureStorage
 
 class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager, CreepStateManager() {
 
-    //TODO: FIX TOWER REFILLING LOGIC.  SEPARATE CREEP?
 
     fun ferryEnergy(){
         for (courier in creeps){
@@ -17,15 +17,22 @@ class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager
             energyManagement(courier)
             if (courier.memory.fullOfEnergy){
                 val spawnersAndExtensions = homeRoom.find(FIND_MY_STRUCTURES, options { filter = {
-                    (it.structureType == STRUCTURE_SPAWN || it.structureType == STRUCTURE_EXTENSION || it.structureType == STRUCTURE_TOWER)
+                    (it.structureType == STRUCTURE_SPAWN || it.structureType == STRUCTURE_EXTENSION)
                             && (it as StoreOwner).store.getFreeCapacity(RESOURCE_ENERGY) > 0
                 } })
                 if (spawnersAndExtensions.isNotEmpty()){
                     courier.memory.depositID = spawnersAndExtensions[0].id
                 } else {
-                    courier.memory.depositID = ""
+                    val towers = homeRoom.find(FIND_MY_STRUCTURES, options { filter = {
+                        it.structureType == STRUCTURE_TOWER
+                                && (it as StoreOwner).store.getFreeCapacity(RESOURCE_ENERGY) > 500
+                    } })
+                    if (towers.isNotEmpty()){
+                        courier.memory.depositID = towers[0].id
+                    } else {
+                        courier.memory.depositID = ""
+                    }
                 }
-
                 if(courier.memory.depositID.isBlank()){
 
                     var constructionSiteID = ""
@@ -66,23 +73,25 @@ class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager
                                     courier.memory.constructionSiteID = ""
                                 } else {
                                     val dropSpotArray = Game.rooms[courier.memory.roomSpawnLocation]!!.lookAtAreaAsArray(
-                                            building.pos.x + 2,
-                                            building.pos.x - 2,
                                             building.pos.y - 2,
-                                            building.pos.y + 2)
+                                            building.pos.x - 2,
+                                            building.pos.y + 2,
+                                            building.pos.x + 2)
                                     val dropSpotLocation = dropSpotArray.filter {
                                         it.type == LOOK_TERRAIN && it.terrain == TERRAIN_PLAIN
                                     }
-                                    courier.memory.dropSpot = RoomPosition(dropSpotLocation[0].x, dropSpotLocation[0].y, homeRoom.name)
-
+                                    if (dropSpotLocation.isNotEmpty()) {
+                                        courier.memory.dropSpot = RoomPositionObject(dropSpotLocation[0].x, dropSpotLocation[0].y, homeRoom.name)
+                                    }
                                 }
                             }
                         } else {
-                            if (courier.pos.x != courier.memory.dropSpot.x && courier.pos.y != courier.memory.dropSpot.y) {
-                                courier.moveTo(courier.memory.dropSpot)
+                            if (courier.pos.x != courier.memory.dropSpot.x && courier.pos.y != courier.memory.dropSpot.y
+                                    && courier.pos.roomName == courier.memory.dropSpot.roomName) {
+                                courier.moveTo(RoomPosition(courier.memory.dropSpot.x, courier.memory.dropSpot.y, courier.memory.dropSpot.roomName))
                             } else {
                                 courier.drop(RESOURCE_ENERGY)
-                                courier.memory.dropSpot = RoomPosition(0,0,"roomName")
+                                courier.memory.dropSpot = RoomPositionObject(0,0,"roomName")
                                 courier.memory.constructionSiteID = ""
                             }
                         }

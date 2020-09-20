@@ -33,8 +33,9 @@ class UpgradeCreepManager(private val creeps:List<Creep>): EnergyLocationManager
                             roomController.pos.x+3
                     )
                     val containersNearController = lookNearController.filter {
-                        (it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_CONTAINER)
-                                || (it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_STORAGE)
+                        ((it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_CONTAINER)
+                                || (it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_STORAGE))
+                                && (it as StoreOwner).store != null && (it as StoreOwner).store.getUsedCapacity(RESOURCE_ENERGY) > 0
                     }
                     if (containersNearController.isNotEmpty()){
                         upgrader.memory.withdrawID = containersNearController[0].structure!!.id

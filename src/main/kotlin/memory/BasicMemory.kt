@@ -2,6 +2,7 @@ package memory
 
 import job.JobType
 import objects.ConstructionDataObject
+import objects.RoomPositionObject
 import objects.SourceDataObject
 import screeps.api.*
 import screeps.utils.memory.memory
@@ -22,7 +23,7 @@ var CreepMemory.fullOfEnergy: Boolean by memory { false }
 var CreepMemory.withdrawID: String by memory {""}
 var CreepMemory.depositID: String by memory {""}
 var CreepMemory.constructionSiteID: String by memory {""}
-var CreepMemory.dropSpot: RoomPosition by memory {RoomPosition(0,0,"roomName")}
+var CreepMemory.dropSpot: RoomPositionObject by memory {RoomPositionObject()}
 var CreepMemory.droppedID: String by memory {""}
 
 /* Rest of the persistent memory structures.
