@@ -27,31 +27,33 @@ class InitializationManager(val rooms: List<Room> ) {
     fun sourceContainerAssociation() {
         for (room in rooms){
             val sources = room.memory.sources
-            for (source in sources){
-                if(source.containerID.isBlank()) {
-                    val sourceID = source.sourceID
-                    val sourceObject = Game.getObjectById<Source>(sourceID)!!
+            for (source in sources) {
+                if (source.containerID != null) {
+                    if (source.containerID.isBlank()) {
+                        val sourceID = source.sourceID
+                        val sourceObject = Game.getObjectById<Source>(sourceID)!!
 
-                    val lookResult = room.lookAtAreaAsArray(
-                            sourceObject.pos.y - 2,
-                            sourceObject.pos.x - 2,
-                            sourceObject.pos.y + 2,
-                            sourceObject.pos.x + 2)
-                    val containersLookResult = lookResult.filter { it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_CONTAINER }
+                        val lookResult = room.lookAtAreaAsArray(
+                                sourceObject.pos.y - 2,
+                                sourceObject.pos.x - 2,
+                                sourceObject.pos.y + 2,
+                                sourceObject.pos.x + 2)
+                        val containersLookResult = lookResult.filter { it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_CONTAINER }
 
-                    val findContainers = containersLookResult.map { (it.structure as StructureContainer) }
-                    if (findContainers.isNotEmpty()) {
-                        for (container in findContainers) {
-                            val sourceIDCheck = sources.any { container.id == it.containerID }
-                            if (!sourceIDCheck) {
-                                source.containerID = container.id
-                                break
+                        val findContainers = containersLookResult.map { (it.structure as StructureContainer) }
+                        if (findContainers.isNotEmpty()) {
+                            for (container in findContainers) {
+                                val sourceIDCheck = sources.any { container.id == it.containerID }
+                                if (!sourceIDCheck) {
+                                    source.containerID = container.id
+                                    break
+                                }
                             }
                         }
-                    }
-                } else {
-                    if (Game.getObjectById<StructureContainer>(source.containerID) == null) {
-                        source.containerID = ""
+                    } else {
+                        if (Game.getObjectById<StructureContainer>(source.containerID) == null) {
+                            source.containerID = ""
+                        }
                     }
                 }
             }

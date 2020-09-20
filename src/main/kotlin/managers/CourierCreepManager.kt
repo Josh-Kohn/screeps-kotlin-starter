@@ -9,11 +9,23 @@ import screeps.api.structures.StructureStorage
 
 class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager, CreepStateManager() {
 
+    //TODO: FIX TOWER REFILLING LOGIC.  SEPARATE CREEP?
+
     fun ferryEnergy(){
         for (courier in creeps){
             val homeRoom = Game.rooms[courier.memory.roomSpawnLocation]!!
             energyManagement(courier)
             if (courier.memory.fullOfEnergy){
+                val spawnersAndExtensions = homeRoom.find(FIND_MY_STRUCTURES, options { filter = {
+                    (it.structureType == STRUCTURE_SPAWN || it.structureType == STRUCTURE_EXTENSION || it.structureType == STRUCTURE_TOWER)
+                            && (it as StoreOwner).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                } })
+                if (spawnersAndExtensions.isNotEmpty()){
+                    courier.memory.depositID = spawnersAndExtensions[0].id
+                } else {
+                    courier.memory.depositID = ""
+                }
+
                 if(courier.memory.depositID.isBlank()){
 
                     var constructionSiteID = ""
@@ -101,25 +113,27 @@ class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager
                 } else {
                     for (source in homeRoom.memory.sources) {
                         if (courier.memory.sourceIDAssignment == source.sourceID) {
-                            if (source.containerID.isNotBlank()) {
-                                val container = Game.getObjectById<StructureContainer>(source.containerID)
-                                if (container != null) {
-                                    when (courier.withdraw(container, RESOURCE_ENERGY)) {
-                                        ERR_NOT_IN_RANGE -> {
-                                            courier.moveTo(container.pos)
+                            if (source.containerID != null) {
+                                if (source.containerID.isNotBlank()) {
+                                    val container = Game.getObjectById<StructureContainer>(source.containerID)
+                                    if (container != null) {
+                                        when (courier.withdraw(container, RESOURCE_ENERGY)) {
+                                            ERR_NOT_IN_RANGE -> {
+                                                courier.moveTo(container.pos)
+                                            }
                                         }
                                     }
-                                }
-                            } else {
-                                if (courier.memory.droppedID.isBlank()) {
-                                    val droppedEnergy = homeRoom.find(FIND_DROPPED_RESOURCES).filter { it.resourceType == RESOURCE_ENERGY }
-                                    courier.memory.droppedID = droppedEnergy[0].id
                                 } else {
-                                    val droppedEnergyID = Game.getObjectById<Resource>(courier.memory.droppedID)
-                                    if (droppedEnergyID != null) {
-                                        when (courier.pickup(droppedEnergyID)) {
-                                            ERR_NOT_IN_RANGE -> {
-                                                courier.moveTo((droppedEnergyID.pos))
+                                    if (courier.memory.droppedID.isBlank()) {
+                                        val droppedEnergy = homeRoom.find(FIND_DROPPED_RESOURCES).filter { it.resourceType == RESOURCE_ENERGY }
+                                        courier.memory.droppedID = droppedEnergy[0].id
+                                    } else {
+                                        val droppedEnergyID = Game.getObjectById<Resource>(courier.memory.droppedID)
+                                        if (droppedEnergyID != null) {
+                                            when (courier.pickup(droppedEnergyID)) {
+                                                ERR_NOT_IN_RANGE -> {
+                                                    courier.moveTo((droppedEnergyID.pos))
+                                                }
                                             }
                                         }
                                     }

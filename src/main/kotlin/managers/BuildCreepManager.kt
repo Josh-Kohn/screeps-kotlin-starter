@@ -55,6 +55,7 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
             } else {
                 if (builder.memory.withdrawID.isBlank()){
                     builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
+                    //TODO
                     /*if (builder.memory.withdrawID.isBlank()) {
                         //Builder Creep has no energy, go find a source and harvest
                         if (builder.memory.sourceIDAssignment.isBlank()) {

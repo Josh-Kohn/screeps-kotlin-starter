@@ -1,9 +1,6 @@
 package managers
 
-import memory.constructionSiteID
-import memory.fullOfEnergy
-import memory.sourceIDAssignment
-import memory.withdrawID
+import memory.*
 import screeps.api.*
 
 /**
@@ -27,7 +24,23 @@ class UpgradeCreepManager(private val creeps:List<Creep>): EnergyLocationManager
                 }
             } else {
                 if (upgrader.memory.withdrawID.isBlank()){
-                    upgrader.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
+
+                    val roomController = upgrader.room.controller!!
+                    val lookNearController = Game.rooms[upgrader.memory.roomSpawnLocation]!!.lookAtAreaAsArray(
+                            roomController.pos.y-3,
+                            roomController.pos.x-3,
+                            roomController.pos.y+3,
+                            roomController.pos.x+3
+                    )
+                    val containersNearController = lookNearController.filter {
+                        (it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_CONTAINER)
+                                || (it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_STORAGE)
+                    }
+                    if (containersNearController.isNotEmpty()){
+                        upgrader.memory.withdrawID = containersNearController[0].structure!!.id
+                    } else {
+                        upgrader.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
+                    }
                     if (upgrader.memory.withdrawID.isBlank()) {
                         //Builder Creep has no energy, go find a source and harvest
                         if (upgrader.memory.sourceIDAssignment.isBlank()) {
