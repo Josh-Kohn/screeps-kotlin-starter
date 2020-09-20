@@ -86,13 +86,13 @@ class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager
                                 }
                             }
                         } else {
-                            if (courier.pos.x != courier.memory.dropSpot.x && courier.pos.y != courier.memory.dropSpot.y
+                            if (courier.pos.x == courier.memory.dropSpot.x && courier.pos.y == courier.memory.dropSpot.y
                                     && courier.pos.roomName == courier.memory.dropSpot.roomName) {
-                                courier.moveTo(RoomPosition(courier.memory.dropSpot.x, courier.memory.dropSpot.y, courier.memory.dropSpot.roomName))
-                            } else {
                                 courier.drop(RESOURCE_ENERGY)
                                 courier.memory.dropSpot = RoomPositionObject(0,0,"roomName")
                                 courier.memory.constructionSiteID = ""
+                            } else {
+                                courier.moveTo(RoomPosition(courier.memory.dropSpot.x, courier.memory.dropSpot.y, courier.memory.dropSpot.roomName))
                             }
                         }
                     }

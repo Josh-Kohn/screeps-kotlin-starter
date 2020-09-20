@@ -262,8 +262,8 @@ class SpawningManager {
             }
             JobType.COURIER.name -> {
                 maxWork = 0
-                maxCarry = 3
-                maxMove = 3
+                maxCarry = 4
+                maxMove = 4
                 workRatio = 0
                 carryRatio = 1
                 moveRatio = 1

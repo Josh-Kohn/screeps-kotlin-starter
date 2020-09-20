@@ -54,21 +54,24 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                 }
             } else {
                 if (builder.memory.withdrawID.isBlank()){
-                    builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
-                    //TODO
-                    /*if (builder.memory.withdrawID.isBlank()) {
-                        //Builder Creep has no energy, go find a source and harvest
-                        if (builder.memory.sourceIDAssignment.isBlank()) {
-                            builder.memory.sourceIDAssignment = getFreeSourceID(homeRoom.name) ?: ""
-                        } else {
-                            val getSource = Game.getObjectById<Source>(builder.memory.sourceIDAssignment)!!
-                            when (builder.harvest(getSource)) {
+                    val constructionSiteEnergy = Game.getObjectById<ConstructionSite>(builder.memory.constructionSiteID)
+                    if (constructionSiteEnergy != null) {
+                        val droppedEnergy = homeRoom.lookAtAreaAsArray(
+                                constructionSiteEnergy.pos.y - 3,
+                                constructionSiteEnergy.pos.x - 3,
+                                constructionSiteEnergy.pos.y + 3,
+                                constructionSiteEnergy.pos.x + 3
+                        ).filter { it.type == LOOK_RESOURCES }
+                        if (droppedEnergy.isNotEmpty()){
+                            when (builder.pickup(droppedEnergy[0].resource!!)){
                                 ERR_NOT_IN_RANGE -> {
-                                    builder.moveTo(getSource)
+                                    builder.moveTo(droppedEnergy[0].resource!!.pos)
                                 }
                             }
                         }
-                    }*/
+                    } else {
+                        builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
+                    }
                 } else {
                     val getContainer = Game.getObjectById<StoreOwner>(builder.memory.withdrawID)
                     if (getContainer == null){
