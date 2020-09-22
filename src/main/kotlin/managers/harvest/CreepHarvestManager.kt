@@ -35,7 +35,7 @@ class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManage
             } else {
                 val getSource = Game.getObjectById<Source>(creep.memory.sourceIDAssignment)!!
                 when (creep.harvest(getSource)) {
-                    ERR_NOT_IN_RANGE -> {
+                    ERR_NOT_IN_RANGE, ERR_NOT_ENOUGH_RESOURCES -> {
                         creep.moveTo(getSource)
                     }
                     OK -> {
@@ -43,7 +43,7 @@ class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManage
                         val containerOwner = Game.getObjectById<StoreOwner>(container)
                         if (containerOwner != null){
                             when (creep.transfer(containerOwner, RESOURCE_ENERGY)) {
-                                ERR_NOT_IN_RANGE, ERR_NOT_ENOUGH_RESOURCES -> {
+                                ERR_NOT_IN_RANGE -> {
                                     creep.moveTo(getSource)
                                 }
                             }

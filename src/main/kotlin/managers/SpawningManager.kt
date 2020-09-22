@@ -1,10 +1,8 @@
 package managers
 
 import job.JobType
-import memory.constructionDataObjects
-import memory.job
-import memory.roomSpawnLocation
-import memory.sources
+import memory.*
+import objects.SourceDataObject
 import screeps.api.*
 import screeps.utils.unsafe.jsObject
 
@@ -252,9 +250,9 @@ class SpawningManager {
 
         when (creepJob){
             JobType.HARVESTER.name -> {
-                maxWork = 3
+                maxWork = 5
                 maxCarry = 1
-                maxMove = 1
+                maxMove = 3
                 workRatio = 1
                 carryRatio = 1
                 moveRatio = 1
@@ -262,16 +260,16 @@ class SpawningManager {
             }
             JobType.COURIER.name -> {
                 maxWork = 0
-                maxCarry = 4
-                maxMove = 4
+                maxCarry = 6
+                maxMove = 6
                 workRatio = 0
                 carryRatio = 1
                 moveRatio = 1
             }
             JobType.UPGRADER.name -> {
-                maxWork = 2
-                maxCarry = 2
-                maxMove = 2
+                maxWork = 3
+                maxCarry = 3
+                maxMove = 3
                 workRatio = 1
                 carryRatio = 1
                 moveRatio = 1
@@ -326,11 +324,14 @@ class SpawningManager {
                 val sources = currentRoom.memory.sources
                 for (sourceMemory in sources) {
                     if (sourceMemory.currentHarvesterCreeps < sourceMemory.maxHarvesterCreeps) {
-                        console.log("Harvester Needed")
-                        return JobType.HARVESTER.name
+                        if (workPerSource(sourceMemory) < 5){
+                            console.log("Harvester Needed")
+                            return JobType.HARVESTER.name
+                        }
                     }
                 }
                 val couriersNeeded = sources.size
+                //TODO Double up the amount of couriers
                 if (courierCreeps.size < couriersNeeded) {
                     console.log("Courier Needed")
                     return JobType.COURIER.name
@@ -365,7 +366,7 @@ class SpawningManager {
     fun generateNewCreepNameByJobType(jobName: String): String {
         var workerNumber = 1
         while (true) {
-            val workerName = "$jobName $workerNumber"
+            val workerName = "${jobName.toLowerCase()} $workerNumber"
             val nameChecker: Creep? = Game.creeps[workerName]
             if (nameChecker == null) {
                 return workerName
@@ -374,5 +375,15 @@ class SpawningManager {
                 workerNumber += 1
             }
         }
+    }
+
+    fun workPerSource(sourceDataObject: SourceDataObject): Int {
+        val harvesters = Game.creeps.values.filter { it.memory.job == JobType.HARVESTER.name }
+        val harvestersOnSource = harvesters.filter { it.memory.sourceIDAssignment == sourceDataObject.sourceID }
+        val workFilter = harvestersOnSource.map {creep ->
+           creep.body.filter { it.type == WORK }.size
+        }
+        //total is the accumulation of entries, work is the each individual index within the array, total+work adds as it goes along
+        return workFilter.reduce { total, work -> total+work }
     }
 }

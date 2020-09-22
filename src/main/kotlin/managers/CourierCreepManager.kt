@@ -2,11 +2,9 @@ package managers
 
 import job.JobType
 import memory.*
-import objects.RoomPositionObject
 import objects.SourceDataObject
 import screeps.api.*
 import screeps.api.structures.StructureContainer
-import screeps.api.structures.StructureStorage
 
 class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager, CreepStateManager() {
 
@@ -64,36 +62,15 @@ class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager
                              courier.memory.depositID = containersNearController[0].structure!!.id
                         }
                     } else {
-                        if (courier.memory.dropSpot.roomName == "roomName") {
-                            if (courier.memory.constructionSiteID.isBlank()) {
-                                courier.memory.constructionSiteID = constructionSiteID
+                        val building = Game.getObjectById<ConstructionSite>(courier.memory.constructionSiteID)
+                        if (building != null) {
+                            if (courier.pos.inRangeTo(building.pos, 1)) {
+                                courier.drop(RESOURCE_ENERGY)
                             } else {
-                                val building = Game.getObjectById<ConstructionSite>(courier.memory.constructionSiteID)
-                                if (building == null) {
-                                    courier.memory.constructionSiteID = ""
-                                } else {
-                                    val dropSpotArray = Game.rooms[courier.memory.roomSpawnLocation]!!.lookAtAreaAsArray(
-                                            building.pos.y - 2,
-                                            building.pos.x - 2,
-                                            building.pos.y + 2,
-                                            building.pos.x + 2)
-                                    val dropSpotLocation = dropSpotArray.filter {
-                                        it.type == LOOK_TERRAIN && it.terrain == TERRAIN_PLAIN
-                                    }
-                                    if (dropSpotLocation.isNotEmpty()) {
-                                        courier.memory.dropSpot = RoomPositionObject(dropSpotLocation[0].x, dropSpotLocation[0].y, homeRoom.name)
-                                    }
-                                }
+                                courier.moveTo(building.pos)
                             }
                         } else {
-                            if (courier.pos.x == courier.memory.dropSpot.x && courier.pos.y == courier.memory.dropSpot.y
-                                    && courier.pos.roomName == courier.memory.dropSpot.roomName) {
-                                courier.drop(RESOURCE_ENERGY)
-                                courier.memory.dropSpot = RoomPositionObject(0,0,"roomName")
-                                courier.memory.constructionSiteID = ""
-                            } else {
-                                courier.moveTo(RoomPosition(courier.memory.dropSpot.x, courier.memory.dropSpot.y, courier.memory.dropSpot.roomName))
-                            }
+                            courier.memory.constructionSiteID = ""
                         }
                     }
                 } else {

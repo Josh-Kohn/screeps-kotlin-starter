@@ -13,21 +13,20 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
     fun buildConstructionSites() {
         for (builder in creeps) {
             val homeRoom = Game.rooms[builder.pos.roomName]!!
+            for (constructionDataObject in Memory.constructionDataObjects){
+                if(constructionDataObject.roomOwner == homeRoom.name){
+                    builder.memory.constructionSiteID = constructionDataObject.constructionSiteID
+                    break
+                }
+            }
             energyManagement(builder)
             if (builder.memory.fullOfEnergy) {
                 builder.memory.withdrawID = ""
                 builder.memory.sourceIDAssignment = ""
 
-                var constructionSiteID = ""
-                for (constructionDataObject in Memory.constructionDataObjects){
-                    if(constructionDataObject.roomOwner == homeRoom.name){
-                        constructionSiteID = constructionDataObject.constructionSiteID
-                        break
-                    }
-                }
 
 
-                if (constructionSiteID.isBlank()) {
+                if (builder.memory.constructionSiteID.isBlank()) {
                     val roomController = builder.room.controller
                     when (builder.upgradeController(roomController!!)) {
                         ERR_NOT_IN_RANGE -> {
@@ -36,9 +35,7 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                     }
                     builder.upgradeController(roomController)
                 } else {
-                    if (builder.memory.constructionSiteID.isBlank()) {
-                        builder.memory.constructionSiteID = constructionSiteID
-                    } else {
+                    if (builder.memory.constructionSiteID.isNotBlank()) {
                         val building = Game.getObjectById<ConstructionSite>(builder.memory.constructionSiteID)
                         //Game's getObjectById function gets you an object from the id you give it if the object exists (in this case, builder.memory.constructionSiteId)
                         if (building == null) {
@@ -66,11 +63,12 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                             when (builder.pickup(droppedEnergy[0].resource!!)){
                                 ERR_NOT_IN_RANGE -> {
                                     builder.moveTo(droppedEnergy[0].resource!!.pos)
+                                    //TODO Figure out why it's not getting past here
                                 }
                             }
+                        } else {
+                            builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
                         }
-                    } else {
-                        builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
                     }
                 } else {
                     val getContainer = Game.getObjectById<StoreOwner>(builder.memory.withdrawID)
