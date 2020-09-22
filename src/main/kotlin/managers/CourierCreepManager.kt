@@ -33,14 +33,13 @@ class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager
                 }
                 if(courier.memory.depositID.isBlank()){
 
-                    var constructionSiteID = ""
                     for (constructionDataObject in Memory.constructionDataObjects){
                         if(constructionDataObject.roomOwner == homeRoom.name){
-                            constructionSiteID = constructionDataObject.constructionSiteID
+                            courier.memory.constructionSiteID = constructionDataObject.constructionSiteID
                             break
                         }
                     }
-                    if (constructionSiteID.isBlank()){
+                    if (courier.memory.constructionSiteID.isBlank()){
                         val roomController = courier.room.controller!!
                         val lookNearController = Game.rooms[courier.memory.roomSpawnLocation]!!.lookAtAreaAsArray(
                                 roomController.pos.y-3,

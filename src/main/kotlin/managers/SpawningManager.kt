@@ -5,20 +5,23 @@ import memory.*
 import objects.SourceDataObject
 import screeps.api.*
 import screeps.utils.unsafe.jsObject
+import util.maxWorkPerSource
+import util.workPerSource
 
 class SpawningManager {
     /**
      * Checks if spawners are available to spawn worker creeps.  Spawns a creep if possible.
      */
     fun createACreep(workParameter: Array<BodyPartConstant>, workerName: String, roomName: String, jobType: String) {
-        val allSpawners = Game.spawns.values.filter { it.pos.roomName ==  roomName}
-        for (spawner in allSpawners){
+        val allSpawners = Game.spawns.values.filter { it.pos.roomName == roomName }
+        for (spawner in allSpawners) {
             if (spawner.spawning == null) {
-                spawner.spawnCreep(workParameter, workerName, options { memory = jsObject<CreepMemory> {
-                    this.roomSpawnLocation = spawner.pos.roomName
-                    this.job = jobType
-                    console.log("Creating Creep with body $workParameter")
-                }
+                spawner.spawnCreep(workParameter, workerName, options {
+                    memory = jsObject<CreepMemory> {
+                        this.roomSpawnLocation = spawner.pos.roomName
+                        this.job = jobType
+                        console.log("Creating Creep with body $workParameter")
+                    }
                 })
                 break
             }
@@ -132,7 +135,7 @@ class SpawningManager {
         if (toughParts + toughRatio <= maxTough) nextRunEnergyUsed += (toughRatio * BODYPART_COST[TOUGH]!!)
         if (healParts + healRatio <= maxHeal) nextRunEnergyUsed += (healRatio * BODYPART_COST[HEAL]!!)
         if (moveParts + moveRatio <= maxMove) nextRunEnergyUsed += (moveRatio * BODYPART_COST[MOVE]!!)
-        while(nextRunEnergyUsed <= maxEnergy
+        while (nextRunEnergyUsed <= maxEnergy
                 && (((workParts + workRatio <= maxWork && workRatio != 0))
                         || ((carryParts + carryRatio <= maxCarry && carryRatio != 0))
                         || ((claimParts + claimRatio <= maxClaim && claimRatio != 0))
@@ -240,7 +243,7 @@ class SpawningManager {
         return body
     }
 
-    fun getBodyByJob(creepJob: String, currentRoom: Room): List<BodyPartConstant>{
+    fun getBodyByJob(creepJob: String, currentRoom: Room): List<BodyPartConstant> {
         val maxWork: Int
         val maxCarry: Int
         val maxMove: Int
@@ -248,9 +251,9 @@ class SpawningManager {
         val moveRatio: Int
         val workRatio: Int
 
-        when (creepJob){
+        when (creepJob) {
             JobType.HARVESTER.name -> {
-                maxWork = 5
+                maxWork = 6
                 maxCarry = 1
                 maxMove = 3
                 workRatio = 1
@@ -275,12 +278,12 @@ class SpawningManager {
                 moveRatio = 1
             }
             JobType.BUILDER.name -> {
-                maxWork = 1
+                maxWork = 3
                 maxCarry = 1
                 maxMove = 2
                 workRatio = 1
                 carryRatio = 1
-                moveRatio = 2
+                moveRatio = 1
             }
             else -> {
                 maxWork = 1
@@ -308,9 +311,9 @@ class SpawningManager {
     fun findJob(currentRoom: Room): String {
         //Write an if check to see if we have any harvester and courier creeps in the room
         val roomCreeps = currentRoom.find(FIND_MY_CREEPS)
-        val harvestCreeps = roomCreeps.filter { it.memory.job == JobType.HARVESTER.name}
-        val courierCreeps = roomCreeps.filter { it.memory.job == JobType.COURIER.name}
-        when{
+        val harvestCreeps = roomCreeps.filter { it.memory.job == JobType.HARVESTER.name }
+        val courierCreeps = roomCreeps.filter { it.memory.job == JobType.COURIER.name }
+        when {
             harvestCreeps.isEmpty() && courierCreeps.isEmpty() -> {
                 return JobType.HARVESTER.name
             }
@@ -324,7 +327,7 @@ class SpawningManager {
                 val sources = currentRoom.memory.sources
                 for (sourceMemory in sources) {
                     if (sourceMemory.currentHarvesterCreeps < sourceMemory.maxHarvesterCreeps) {
-                        if (workPerSource(sourceMemory) < 5){
+                        if (workPerSource(sourceMemory) < maxWorkPerSource) {
                             console.log("Harvester Needed")
                             return JobType.HARVESTER.name
                         }
@@ -342,8 +345,8 @@ class SpawningManager {
                     return JobType.UPGRADER.name
                 }
                 var constructionSiteID = ""
-                for (constructionDataObject in Memory.constructionDataObjects){
-                    if(constructionDataObject.roomOwner == currentRoom.name){
+                for (constructionDataObject in Memory.constructionDataObjects) {
+                    if (constructionDataObject.roomOwner == currentRoom.name) {
                         constructionSiteID = constructionDataObject.constructionSiteID
                         break
                     }
@@ -370,20 +373,10 @@ class SpawningManager {
             val nameChecker: Creep? = Game.creeps[workerName]
             if (nameChecker == null) {
                 return workerName
-            }
-            else{
+            } else {
                 workerNumber += 1
             }
         }
     }
 
-    fun workPerSource(sourceDataObject: SourceDataObject): Int {
-        val harvesters = Game.creeps.values.filter { it.memory.job == JobType.HARVESTER.name }
-        val harvestersOnSource = harvesters.filter { it.memory.sourceIDAssignment == sourceDataObject.sourceID }
-        val workFilter = harvestersOnSource.map {creep ->
-           creep.body.filter { it.type == WORK }.size
-        }
-        //total is the accumulation of entries, work is the each individual index within the array, total+work adds as it goes along
-        return workFilter.reduce { total, work -> total+work }
-    }
 }
