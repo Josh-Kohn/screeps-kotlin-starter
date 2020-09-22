@@ -27,8 +27,6 @@ class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager
                     } })
                     if (towers.isNotEmpty()){
                         courier.memory.depositID = towers[0].id
-                    } else {
-                        courier.memory.depositID = ""
                     }
                 }
                 if(courier.memory.depositID.isBlank()){
@@ -120,6 +118,8 @@ class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager
                                                     courier.moveTo((droppedEnergyID.pos))
                                                 }
                                             }
+                                        } else {
+                                            courier.memory.droppedID = ""
                                         }
                                     }
                                 }

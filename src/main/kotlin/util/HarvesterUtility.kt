@@ -14,7 +14,11 @@ fun workPerSource(sourceDataObject: SourceDataObject): Int {
         creep.body.filter { it.type == WORK }.size
     }
     //total is the accumulation of entries, work is the each individual index within the array, total+work adds as it goes along
-    return workFilter.reduce { total, work -> total+work }
+    return if (workFilter.isNotEmpty()) {
+        workFilter.reduce { total, work -> total + work }
+    } else {
+        0
+    }
 }
 
 val maxWorkPerSource = 6

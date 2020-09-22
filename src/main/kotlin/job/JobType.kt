@@ -5,8 +5,9 @@ enum class JobType(val priority: Int) {
     COURIER(1),
     UPGRADER(2),
     BUILDER(3),
-    REPAIRMAN(4),
-    FIGHTER(5),
+    JANITOR(4),
+    REPAIRMAN(5),
+    FIGHTER(6),
     IDLE(99),
     NONE(100)
 }

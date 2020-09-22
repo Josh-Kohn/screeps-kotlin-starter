@@ -285,6 +285,14 @@ class SpawningManager {
                 carryRatio = 1
                 moveRatio = 1
             }
+            JobType.JANITOR.name -> {
+                maxWork = 0
+                maxCarry = 6
+                maxMove = 6
+                workRatio = 0
+                carryRatio = 1
+                moveRatio = 1
+            }
             else -> {
                 maxWork = 1
                 maxCarry = 1
@@ -334,10 +342,14 @@ class SpawningManager {
                     }
                 }
                 val couriersNeeded = sources.size
-                //TODO Double up the amount of couriers
                 if (courierCreeps.size < couriersNeeded) {
                     console.log("Courier Needed")
                     return JobType.COURIER.name
+                }
+                val janitorNeeded = roomCreeps.filter { it.memory.job == JobType.JANITOR.name }
+                if (janitorNeeded.isEmpty() && currentRoom.storage != null) {
+                    console.log("Janitor Needed")
+                    return JobType.JANITOR.name
                 }
                 val activeUpgrader = roomCreeps.filter { it.memory.job == JobType.UPGRADER.name }
                 if (activeUpgrader.isEmpty()) {
@@ -378,5 +390,4 @@ class SpawningManager {
             }
         }
     }
-
 }

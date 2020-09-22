@@ -43,6 +43,9 @@ fun loop() {
     val findCourierCreeps = findAllCreepsByJobType(JobType.COURIER.name)
     CourierCreepManager(findCourierCreeps).ferryEnergy()
 
+    val findJanitorCreeps = findAllCreepsByJobType(JobType.JANITOR.name)
+    JanitorCreepManager(findJanitorCreeps).cleanUpEnergy()
+
     val buildCreepManager = BuildCreepManager(findAllCreepsByJobType(JobType.BUILDER.name))
     buildCreepManager.buildConstructionSites()
 
