@@ -60,7 +60,7 @@ fun loop() {
 
     val towerManager = TowerManager(findTowers(myRooms))
     if (!towerManager.towerDefenseProtocol()) {
-        towerManager.towerRepairProtocol(myRooms, findTowers(myRooms))
+        towerManager.towerRepairProtocol()
     }
     // Pixels! If we have enough banked CPU. CPU bucket max is 10k
     if (Game.cpu.bucket >= 10000 - 100) {
@@ -141,6 +141,7 @@ fun findTowers(myRooms: MutableList<Room>): List<StructureTower>{
     for(room in myRooms) {
         val foundTowers = room.find(FIND_MY_STRUCTURES).filter { (it.structureType == STRUCTURE_TOWER) }
         towers.addAll(foundTowers as List<StructureTower>)
+        foundTowers.forEach { console.log(it) }
     }
     return towers
 }

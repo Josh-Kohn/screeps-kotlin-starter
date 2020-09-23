@@ -9,21 +9,23 @@ import kotlin.js.Console
 class TowerManager(private val towers:List<StructureTower>) {
 
     fun towerDefenseProtocol(): Boolean {
+        var foundEnemies = false
         for (tower in towers) {
             val hostiles = tower.room.find(FIND_HOSTILE_CREEPS)
             if (hostiles.isNotEmpty()) {
                 val userName = hostiles[0].owner.username
                 Game.notify("User $userName spotted in room ${tower.room}")
                 tower.attack(hostiles[0])
-                return true
+                foundEnemies = true
             }
         }
-        return false
+        return foundEnemies
     }
 
-    fun towerRepairProtocol(myRooms: MutableList<Room>, towers: List<StructureTower>){
-        for (room in myRooms) {
-            val damagedGoods = room.find(FIND_STRUCTURES).filter {
+    fun towerRepairProtocol(){
+        for (tower in towers){
+            val towerRoom = Game.rooms[tower.pos.roomName]!!
+            val damagedGoods = towerRoom.find(FIND_STRUCTURES).filter {
                 (it.structureType != STRUCTURE_RAMPART
                         && it.structureType != STRUCTURE_WALL
                         && it.structureType != STRUCTURE_CONTROLLER)
@@ -31,11 +33,7 @@ class TowerManager(private val towers:List<StructureTower>) {
             }
             if (damagedGoods.isNotEmpty()) {
                 damagedGoods.sortedBy { it.hits }
-                for (tower in towers) {
-                    if (tower.room.name == room.name) {
-                        tower.repair(damagedGoods[0])
-                    }
-                }
+                tower.repair(damagedGoods[0])
             }
         }
     }

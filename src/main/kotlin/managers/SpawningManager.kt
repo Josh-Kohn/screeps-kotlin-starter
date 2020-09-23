@@ -270,10 +270,10 @@ class SpawningManager {
                 moveRatio = 1
             }
             JobType.UPGRADER.name -> {
-                maxWork = 3
+                maxWork = 6
                 maxCarry = 3
                 maxMove = 3
-                workRatio = 1
+                workRatio = 3
                 carryRatio = 1
                 moveRatio = 1
             }
@@ -347,7 +347,7 @@ class SpawningManager {
                     return JobType.COURIER.name
                 }
                 val janitorNeeded = roomCreeps.filter { it.memory.job == JobType.JANITOR.name }
-                if (janitorNeeded.isEmpty() && currentRoom.storage != null) {
+                if (janitorNeeded.size < 2 && currentRoom.storage != null) {
                     console.log("Janitor Needed")
                     return JobType.JANITOR.name
                 }

@@ -19,6 +19,7 @@ class JanitorCreepManager(private val creeps:List<Creep>): CreepStateManager()  
                 for (harvester in harvesters) {
                     val droppedEnergy = harvester.pos.lookFor(LOOK_RESOURCES)
                     if (droppedEnergy != null) {
+                        droppedEnergy.sortByDescending { it.amount }
                         when (janitor.pickup(droppedEnergy[0])) {
                             ERR_NOT_IN_RANGE -> {
                                 janitor.moveTo((droppedEnergy[0].pos))
@@ -49,9 +50,3 @@ class JanitorCreepManager(private val creeps:List<Creep>): CreepStateManager()  
         }
     }
 }
-
-/*Looks for harvester creeps
-* Performs a look to see if there is energy on the ground near them
-* If yes, picks up the energy on the ground and finds the room's storage
-* If not, find the container near the harvester, withdraws energy from it, and then deposits it in the room's storage
-* */
