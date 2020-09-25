@@ -26,7 +26,7 @@ class TowerManager(private val towers:List<StructureTower>) {
         for (tower in towers){
             val towerRoom = Game.rooms[tower.pos.roomName]!!
             val damagedGoods = towerRoom.find(FIND_STRUCTURES).filter {
-                (it.structureType != STRUCTURE_RAMPART
+                ((it.structureType != STRUCTURE_RAMPART || (it.structureType == STRUCTURE_RAMPART && it.hits < 5000))
                         && it.structureType != STRUCTURE_WALL
                         && it.structureType != STRUCTURE_CONTROLLER)
                         && it.hits < it.hitsMax

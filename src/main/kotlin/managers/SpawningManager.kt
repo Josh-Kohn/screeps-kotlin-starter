@@ -293,6 +293,14 @@ class SpawningManager {
                 carryRatio = 1
                 moveRatio = 1
             }
+            JobType.REPAIRMAN.name -> {
+                maxWork = 6
+                maxCarry = 6
+                maxMove = 12
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 2
+            }
             else -> {
                 maxWork = 1
                 maxCarry = 1
@@ -350,6 +358,15 @@ class SpawningManager {
                 if (janitorNeeded.size < 2 && currentRoom.storage != null) {
                     console.log("Janitor Needed")
                     return JobType.JANITOR.name
+                }
+                val repairManNeeded = roomCreeps.filter { it.memory.job == JobType.REPAIRMAN.name }
+                if (repairManNeeded.isEmpty() && currentRoom.storage != null) {
+                    val repairDataObject = Memory.repairDataObjects.find { currentRoom.name == it.roomOwner }
+                    if (repairDataObject != null){
+                        repairDataObject.repairID = ""
+                    }
+                    console.log("Repairman man man man...")
+                    return JobType.REPAIRMAN.name
                 }
                 val activeUpgrader = roomCreeps.filter { it.memory.job == JobType.UPGRADER.name }
                 if (activeUpgrader.isEmpty()) {

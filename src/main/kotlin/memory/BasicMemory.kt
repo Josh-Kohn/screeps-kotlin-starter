@@ -2,6 +2,7 @@ package memory
 
 import job.JobType
 import objects.ConstructionDataObject
+import objects.RepairDataObject
 import objects.SourceDataObject
 import screeps.api.*
 import screeps.utils.memory.memory
@@ -13,6 +14,7 @@ import screeps.utils.memory.memory
 /* Arbitrary Memory */
 
 var GlobalMemory.constructionDataObjects: Array<ConstructionDataObject> by memory { arrayOf<ConstructionDataObject>() }
+var GlobalMemory.repairDataObjects: Array<RepairDataObject> by memory { arrayOf<RepairDataObject>() }
 
 /* Creep.memory */
 var CreepMemory.job: String by memory {JobType.IDLE.name}
@@ -23,6 +25,7 @@ var CreepMemory.withdrawID: String by memory {""}
 var CreepMemory.depositID: String by memory {""}
 var CreepMemory.constructionSiteID: String by memory {""}
 var CreepMemory.droppedID: String by memory {""}
+var CreepMemory.repairID: String by memory {""}
 
 /* Rest of the persistent memory structures.
 * These set an unused test variable to 0. This is done to illustrate the how to add variables to

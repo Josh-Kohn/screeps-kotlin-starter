@@ -25,6 +25,7 @@ fun loop() {
     val creepMemories = deleteCreepsFromMemory()
     updateMemory.updateSourceMemory(creepMemories,myRooms)
     updateMemory.updateConstructionMemory(myRooms)
+    updateMemory.updateRepairMemory(myRooms)
 
     for (room in myRooms){
         val spawnManager = SpawningManager()
@@ -51,6 +52,9 @@ fun loop() {
 
     val upgraderCreepManager = UpgradeCreepManager(findAllCreepsByJobType(JobType.UPGRADER.name))
     upgraderCreepManager.upgradeRoomController()
+
+    val repairCreepManager = RepairCreepManager(findAllCreepsByJobType(JobType.REPAIRMAN.name))
+    repairCreepManager.repairStructures()
 
     if (Game.time == 20000){
         console.log("Room Controller Level at ${Game.rooms["sim"]!!.controller!!.level}")
@@ -141,7 +145,6 @@ fun findTowers(myRooms: MutableList<Room>): List<StructureTower>{
     for(room in myRooms) {
         val foundTowers = room.find(FIND_MY_STRUCTURES).filter { (it.structureType == STRUCTURE_TOWER) }
         towers.addAll(foundTowers as List<StructureTower>)
-        foundTowers.forEach { console.log(it) }
     }
     return towers
 }
