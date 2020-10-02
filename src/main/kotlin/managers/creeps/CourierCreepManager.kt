@@ -1,9 +1,10 @@
-package managers
+package managers.creeps
 
 import job.JobType
 import memory.*
 import objects.SourceDataObject
 import screeps.api.*
+import screeps.api.structures.Structure
 import screeps.api.structures.StructureContainer
 
 class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager, CreepStateManager() {
@@ -14,12 +15,12 @@ class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager
             val homeRoom = Game.rooms[courier.memory.roomSpawnLocation]!!
             energyManagement(courier)
             if (courier.memory.fullOfEnergy){
-                val spawnersAndExtensions = homeRoom.find(FIND_MY_STRUCTURES, options { filter = {
+                val spawnersAndExtensions = courier.pos.findClosestByRange(FIND_MY_STRUCTURES, options<FilterOption<Structure>> { filter = {
                     (it.structureType == STRUCTURE_SPAWN || it.structureType == STRUCTURE_EXTENSION)
                             && (it as StoreOwner).store.getFreeCapacity(RESOURCE_ENERGY) > 0
                 } })
-                if (spawnersAndExtensions.isNotEmpty()){
-                    courier.memory.depositID = spawnersAndExtensions[0].id
+                if (spawnersAndExtensions != null){
+                    courier.memory.depositID = spawnersAndExtensions.id
                 } else {
                     val towers = homeRoom.find(FIND_MY_STRUCTURES, options { filter = {
                         it.structureType == STRUCTURE_TOWER

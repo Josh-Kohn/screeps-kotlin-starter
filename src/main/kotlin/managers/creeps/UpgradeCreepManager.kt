@@ -1,4 +1,4 @@
-package managers
+package managers.creeps
 
 import memory.*
 import screeps.api.*
@@ -7,7 +7,7 @@ import screeps.api.*
  * Directs the upgrader creeps to upgrade the room controller
  */
 
-class UpgradeCreepManager(private val creeps:List<Creep>): EnergyLocationManager,CreepStateManager() {
+class UpgradeCreepManager(private val creeps:List<Creep>): EnergyLocationManager, CreepStateManager() {
 
     fun upgradeRoomController() {
         for (upgrader in creeps) {

@@ -1,4 +1,4 @@
-package managers
+package managers.creeps
 
 import memory.fullOfEnergy
 import screeps.api.Creep

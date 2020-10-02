@@ -1,8 +1,7 @@
-package managers
+package managers.structure
 
 import job.JobType
 import memory.*
-import objects.SourceDataObject
 import screeps.api.*
 import screeps.utils.unsafe.jsObject
 import util.maxWorkPerSource
@@ -243,7 +242,7 @@ class SpawningManager {
         return body
     }
 
-    fun getBodyByJob(creepJob: String, currentRoom: Room): List<BodyPartConstant> {
+    fun getBodyByJob(creepJob: String, energyToUse: Int): List<BodyPartConstant> {
         val maxWork: Int
         val maxCarry: Int
         val maxMove: Int
@@ -294,9 +293,9 @@ class SpawningManager {
                 moveRatio = 1
             }
             JobType.REPAIRMAN.name -> {
-                maxWork = 6
-                maxCarry = 6
-                maxMove = 12
+                maxWork = 4
+                maxCarry = 4
+                maxMove = 8
                 workRatio = 1
                 carryRatio = 1
                 moveRatio = 2
@@ -311,7 +310,7 @@ class SpawningManager {
             }
         }
         //TODO If check here for generating a creep under the condition that no creeps are present
-        return generateBodyByRatio(maxEnergy = currentRoom.energyCapacityAvailable,
+        return generateBodyByRatio(maxEnergy = energyToUse,
                 maxWork = maxWork,
                 maxCarry = maxCarry,
                 maxMove = maxMove,
@@ -355,7 +354,7 @@ class SpawningManager {
                     return JobType.COURIER.name
                 }
                 val janitorNeeded = roomCreeps.filter { it.memory.job == JobType.JANITOR.name }
-                if (janitorNeeded.size < 2 && currentRoom.storage != null) {
+                if (janitorNeeded.isEmpty() && currentRoom.storage != null) {
                     console.log("Janitor Needed")
                     return JobType.JANITOR.name
                 }
@@ -369,7 +368,7 @@ class SpawningManager {
                     return JobType.REPAIRMAN.name
                 }
                 val activeUpgrader = roomCreeps.filter { it.memory.job == JobType.UPGRADER.name }
-                if (activeUpgrader.isEmpty()) {
+                if (activeUpgrader.size < 2) {
                     console.log("Upgrader Needed")
                     return JobType.UPGRADER.name
                 }

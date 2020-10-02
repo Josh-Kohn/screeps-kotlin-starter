@@ -1,10 +1,7 @@
-package managers
+package managers.structure
 
-import getMyRooms
 import screeps.api.*
-import screeps.api.structures.Structure
 import screeps.api.structures.StructureTower
-import kotlin.js.Console
 
 class TowerManager(private val towers:List<StructureTower>) {
 

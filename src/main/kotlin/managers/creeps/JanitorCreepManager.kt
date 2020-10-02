@@ -1,4 +1,4 @@
-package managers
+package managers.creeps
 
 import job.JobType
 import memory.fullOfEnergy

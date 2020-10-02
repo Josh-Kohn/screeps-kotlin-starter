@@ -1,7 +1,6 @@
-package managers
+package managers.creeps
 
 import memory.*
-import objects.SourceDataObject
 import screeps.api.*
 
 /**
@@ -51,13 +50,13 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                 }
             } else {
                 if (builder.memory.withdrawID.isBlank()){
-                    val constructionSiteEnergy = Game.getObjectById<ConstructionSite>(builder.memory.constructionSiteID)
-                    if (constructionSiteEnergy != null) {
+                    val constructionSite = Game.getObjectById<ConstructionSite>(builder.memory.constructionSiteID)
+                    if (constructionSite != null) {
                         val droppedEnergy = homeRoom.lookAtAreaAsArray(
-                                constructionSiteEnergy.pos.y - 3,
-                                constructionSiteEnergy.pos.x - 3,
-                                constructionSiteEnergy.pos.y + 3,
-                                constructionSiteEnergy.pos.x + 3
+                                constructionSite.pos.y - 3,
+                                constructionSite.pos.x - 3,
+                                constructionSite.pos.y + 3,
+                                constructionSite.pos.x + 3
                         ).filter { it.type == LOOK_RESOURCES }
                         if (droppedEnergy.isNotEmpty()){
                             when (builder.pickup(droppedEnergy[0].resource!!)){
@@ -69,6 +68,8 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                         } else {
                             builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
                         }
+                    } else {
+                        builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
                     }
                 } else {
                     val getContainer = Game.getObjectById<StoreOwner>(builder.memory.withdrawID)

@@ -1,6 +1,4 @@
-package managers.harvest
-import managers.CreepStateManager
-import managers.EnergyLocationManager
+package managers.creeps
 import memory.*
 import screeps.api.*
 import screeps.api.structures.StructureContainer
@@ -9,7 +7,7 @@ import screeps.api.structures.StructureContainer
  * The instructions for how to harvest a source.  Pick an initial source, store in the creep's memory, and go harvest that source
  */
 
-class CreepHarvestManager(private val creeps: List<Creep>): EnergyLocationManager {
+class HarvestCreepManager(private val creeps: List<Creep>): EnergyLocationManager {
 
     private fun getContainerID(roomName: String, harvesterCreep: Creep): String {
         val sources = Game.rooms[roomName]!!.memory.sources

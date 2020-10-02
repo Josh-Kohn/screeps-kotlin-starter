@@ -1,6 +1,8 @@
-import managers.harvest.CreepHarvestManager
 import job.JobType
 import managers.*
+import managers.creeps.*
+import managers.structure.SpawningManager
+import managers.structure.TowerManager
 import memory.*
 import screeps.api.Game
 import screeps.api.get
@@ -32,13 +34,21 @@ fun loop() {
         val findAJob = spawnManager.findJob(room)
         if(findAJob != JobType.IDLE.name) {
             val workerName = spawnManager.generateNewCreepNameByJobType(findAJob)
-            val bodyPartList = spawnManager.getBodyByJob(findAJob, room)
+
+            val numberOfCouriers = findAllCreepsByJobTypeInRoom(JobType.COURIER.name, room.name).size
+            val energyToUse = if (numberOfCouriers < 1){
+                300
+            } else {
+                room.energyCapacityAvailable
+            }
+
+            val bodyPartList = spawnManager.getBodyByJob(findAJob, energyToUse)
             spawnManager.createACreep(bodyPartList.toTypedArray(), workerName, room.name, findAJob)
         }
     }
 
     val findHarvesterCreeps = findAllCreepsByJobType(JobType.HARVESTER.name)
-    val creepHarvestManager = CreepHarvestManager(findHarvesterCreeps)
+    val creepHarvestManager = HarvestCreepManager(findHarvesterCreeps)
     creepHarvestManager.harvestSource()
 
     val findCourierCreeps = findAllCreepsByJobType(JobType.COURIER.name)
@@ -74,19 +84,6 @@ fun loop() {
 }
 
 /**
- * Finds idle Creeps
- */
-fun findAllIdleCreeps(): MutableList<Creep> {
-    val idleCreeps: MutableList<Creep> = mutableListOf()
-    for(creep in Game.creeps.values){
-        if(creep.memory.job == JobType.IDLE.name){
-            idleCreeps.add(creep)
-        }
-    }
-    return idleCreeps
-}
-
-/**
  * Gets my rooms
  */
 fun getMyRooms(): MutableList<Room> {
@@ -111,6 +108,16 @@ fun findAllCreepsByJobType(jobType: String): MutableList<Creep> {
     val creeps: MutableList<Creep> = mutableListOf()
     for(creep in Game.creeps.values){
         if(creep.memory.job == jobType){
+            creeps.add(creep)
+        }
+    }
+    return creeps
+}
+
+fun findAllCreepsByJobTypeInRoom(jobType: String, room: String): MutableList<Creep> {
+    val creeps: MutableList<Creep> = mutableListOf()
+    for(creep in Game.creeps.values){
+        if(creep.memory.job == jobType && creep.memory.roomSpawnLocation == room){
             creeps.add(creep)
         }
     }

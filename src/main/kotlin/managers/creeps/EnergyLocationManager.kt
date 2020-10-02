@@ -1,4 +1,4 @@
-package managers
+package managers.creeps
 import memory.*
 import screeps.api.*
 import util.maxWorkPerSource
