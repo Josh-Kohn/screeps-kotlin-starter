@@ -18,6 +18,24 @@ import screeps.utils.unsafe.delete
  */
 @Suppress("unused")
 fun loop() {
+
+    val scoutCreep = Game.creeps["scout"]
+    if (scoutCreep != null ){
+       val flag = Game.flags["go here"]
+        if (flag != null){
+            scoutCreep.moveTo(flag.pos)
+        }
+        if (scoutCreep.hits < scoutCreep.hitsMax){
+            scoutCreep.heal(scoutCreep)
+        }
+    }
+    //else {
+      //  if (Game.spawns["Spawn1"] != null){
+        //    Game.spawns["Spawn1"].spawnCreep(arrayOf(TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ))
+
+//        }
+  //  }
+
     val myRooms = getMyRooms()
     val initializationManager = InitializationManager(myRooms)
     initializationManager.sourceContainerAssociation()
@@ -42,7 +60,7 @@ fun loop() {
                 room.energyCapacityAvailable
             }
 
-            val bodyPartList = spawnManager.getBodyByJob(findAJob, energyToUse)
+            val bodyPartList = spawnManager.getBodyByJob(findAJob, energyToUse, room)
             spawnManager.createACreep(bodyPartList.toTypedArray(), workerName, room.name, findAJob)
         }
     }
@@ -82,7 +100,6 @@ fun loop() {
         Game.cpu.generatePixel()
     }
 }
-
 /**
  * Gets my rooms
  */

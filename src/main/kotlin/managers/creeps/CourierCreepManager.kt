@@ -9,7 +9,6 @@ import screeps.api.structures.StructureContainer
 
 class CourierCreepManager(private val creeps:List<Creep>): EnergyLocationManager, CreepStateManager() {
 
-
     fun ferryEnergy(){
         for (courier in creeps){
             val homeRoom = Game.rooms[courier.memory.roomSpawnLocation]!!

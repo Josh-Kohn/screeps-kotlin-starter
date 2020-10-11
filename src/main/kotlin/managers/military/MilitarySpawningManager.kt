@@ -1,58 +1,27 @@
-package managers.structure
+package managers.military
 
 import job.JobType
-import memory.*
+import memory.job
+import memory.roomSpawnLocation
 import screeps.api.*
 import screeps.utils.unsafe.jsObject
-import util.maxWorkPerSource
-import util.workPerSource
-import kotlin.math.ceil
 
-class SpawningManager {
-    /**
-     * Checks if spawners are available to spawn worker creeps.  Spawns a creep if possible.
-     */
-    fun createACreep(workParameter: Array<BodyPartConstant>, workerName: String, roomName: String, jobType: String) {
-        val allSpawners = Game.spawns.values.filter { it.pos.roomName == roomName }
-        for (spawner in allSpawners) {
-            if (spawner.spawning == null) {
-                spawner.spawnCreep(workParameter, workerName, options {
-                    memory = jsObject<CreepMemory> {
-                        this.roomSpawnLocation = spawner.pos.roomName
-                        this.job = jobType
-                        console.log("Creating Creep with body $workParameter")
-                    }
-                })
-                break
+class MilitarySpawningManager {
+
+    fun militaryGenerateNewCreepNameByJobType(jobName: String): String {
+        var militaryNumber = 1
+        while (true) {
+            val soldierName = "${jobName.toLowerCase()} $militaryNumber"
+            val nameChecker: Creep? = Game.creeps[soldierName]
+            if (nameChecker == null) {
+                return soldierName
+            } else {
+                militaryNumber += 1
             }
         }
     }
 
-    /**
-     * With the given maxEnergy as the cap, attempt to create a creep body that uses the given ratios of work, carry, and move
-     * up to the maximum specified for each body part. If no body could be generated at all, return a W1:C1:M2 body instead.
-     * If the given max was 1 and the ratio was 0, then add one body part and a corresponding move part.
-     *
-     * Example creep body generation.
-     * Assuming that these parameters are given to the generator:
-     * maxWork = 6, workRatio = 1
-     * maxCarry = 1, carryRatio = 0
-     * maxMove = 7, moveRatio = 1
-     *
-     * With maxEnergy = 550 (RCL 2 + extensions) the generated creep is [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE, MOVE].
-     * A total of 550 energy spent. This is because a 1:1 WORK:MOVE ratio adds 1 work and 1 move together, and the 1
-     * carry and 0 carry ratio together forces a single carry and move to be added without further attempting more
-     * calculations.
-     *
-     * With maxEnergy = 800 (RCL 3 + extensions) the generated creep is [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE,
-     * MOVE, MOVE, MOVE], a total of 700 energy spent. It doesn't reach 800 energy spent because the ratios are
-     * 1:1 WORK:MOVE, meaning that adding one more WORK (100 energy) forces another MOVE to be added (50 energy) and the
-     * resulting body would be over the given max of 800.
-     *
-     * Body Parts are added to the creep in the following order:
-     * TOUGH -> WORK -> CARRY -> CLAIM -> ATTACK -> RANGED_ATTACK -> HEAL -> MOVE
-     */
-    fun generateBodyByRatio(
+    fun generateMilitaryBodyByRatio(
             maxEnergy: Int,
             maxWork: Int = 0, workRatio: Int = 0,
             maxCarry: Int = 0, carryRatio: Int = 0,
@@ -197,7 +166,6 @@ class SpawningManager {
             if (moveParts + moveRatio <= maxMove) nextRunEnergyUsed += (moveRatio * BODYPART_COST[MOVE]!!)
         }
 
-
         // This shouldn't ever happen!
         if (workParts < 0 || carryParts < 0 || claimParts < 0 || attackParts < 0 || rangedAttackParts < 0 || toughParts < 0 || healParts < 0 || moveParts < 0) {
             return listOf(WORK, CARRY, MOVE, MOVE)
@@ -243,68 +211,68 @@ class SpawningManager {
         return body
     }
 
-    fun getBodyByJob(creepJob: String, energyToUse: Int, room: Room): List<BodyPartConstant> {
+    fun getBodyByMilitaryJob(creepJob: String, energyToUse: Int): List<BodyPartConstant> {
         val maxWork: Int
         val maxCarry: Int
         val maxMove: Int
         val carryRatio: Int
         val moveRatio: Int
         val workRatio: Int
-        val storageCapacity = room.storage?.store?.getUsedCapacity(RESOURCE_ENERGY) ?: 0
 
         when (creepJob) {
-            JobType.HARVESTER.name -> {
-                maxWork = 6
+            JobType.CAPTAIN.name -> {
+                maxWork = 1
                 maxCarry = 1
-                maxMove = 3
+                maxMove = 1
                 workRatio = 1
                 carryRatio = 1
                 moveRatio = 1
                 //Max efficiency is 5 work on a source
             }
-            JobType.COURIER.name -> {
-                maxWork = 0
-                maxCarry = 6
-                maxMove = 6
-                workRatio = 0
-                carryRatio = 1
-                moveRatio = 1
-            }
-            JobType.UPGRADER.name -> {
-                maxWork = if (storageCapacity > 0){
-                    ceil(storageCapacity / 50000.0).toInt()
-                } else {
-                    4
-                }
-                maxCarry = ceil(maxWork/2.0).toInt()
-                maxMove = maxCarry
-                workRatio = 2
-                carryRatio = 1
-                moveRatio = 1
-            }
-            JobType.BUILDER.name -> {
-                maxWork = 3
+            JobType.TANK.name -> {
+                maxWork = 1
                 maxCarry = 1
-                maxMove = 2
+                maxMove = 1
                 workRatio = 1
                 carryRatio = 1
                 moveRatio = 1
+                //Max efficiency is 5 work on a source
             }
-            JobType.JANITOR.name -> {
-                maxWork = 0
-                maxCarry = 6
-                maxMove = 6
-                workRatio = 0
-                carryRatio = 1
-                moveRatio = 1
-            }
-            JobType.REPAIRMAN.name -> {
-                maxWork = 2
-                maxCarry = 2
-                maxMove = 6
+            JobType.SCOUT.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
                 workRatio = 1
                 carryRatio = 1
-                moveRatio = 2
+                moveRatio = 1
+                //Max efficiency is 5 work on a source
+            }
+            JobType.HEALER.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 1
+                //Max efficiency is 5 work on a source
+            }
+            JobType.RANGER.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 1
+                //Max efficiency is 5 work on a source
+            }
+            JobType.SENTINEL.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 1
+                //Max efficiency is 5 work on a source
             }
             else -> {
                 maxWork = 1
@@ -315,7 +283,7 @@ class SpawningManager {
                 workRatio = 1
             }
         }
-        val generateBodyByRatio = generateBodyByRatio(maxEnergy = energyToUse,
+        val generateBodyByRatio = generateMilitaryBodyByRatio(maxEnergy = energyToUse,
                 maxWork = maxWork,
                 maxCarry = maxCarry,
                 maxMove = maxMove,
@@ -323,97 +291,28 @@ class SpawningManager {
                 moveRatio = moveRatio,
                 workRatio = workRatio)
 
-       return if (generateBodyByRatio.isEmpty()){
-             listOf<BodyPartConstant>(MOVE, CARRY, WORK)
+        return if (generateBodyByRatio.isEmpty()){
+            listOf<BodyPartConstant>(MOVE, CARRY, WORK)
+            //TODO find alternative return
         } else {
             generateBodyByRatio
         }
     }
 
-    /**
-     * Finds a job that needs doing
-     */
-    fun findJob(currentRoom: Room): String {
-        //Write an if check to see if we have any harvester and courier creeps in the room
-        val roomCreeps = currentRoom.find(FIND_MY_CREEPS)
-        val harvestCreeps = roomCreeps.filter { it.memory.job == JobType.HARVESTER.name }
-        val courierCreeps = roomCreeps.filter { it.memory.job == JobType.COURIER.name }
-        when {
-            harvestCreeps.isEmpty() && courierCreeps.isEmpty() -> {
-                return JobType.HARVESTER.name
-            }
-            harvestCreeps.isNotEmpty() && courierCreeps.isEmpty() -> {
-                return JobType.COURIER.name
-            }
-            harvestCreeps.isEmpty() && courierCreeps.isNotEmpty() -> {
-                return JobType.HARVESTER.name
-            }
-            else -> {
-                val sources = currentRoom.memory.sources
-                for (sourceMemory in sources) {
-                    if (sourceMemory.currentHarvesterCreeps < sourceMemory.maxHarvesterCreeps) {
-                        if (workPerSource(sourceMemory) < maxWorkPerSource) {
-                            console.log("Harvester Needed")
-                            return JobType.HARVESTER.name
-                        }
+    fun militaryCreateACreep(workParameter: Array<BodyPartConstant>, workerName: String, roomName: String, jobType: String) {
+        val allSpawners = Game.spawns.values.filter { it.pos.roomName == roomName }
+        for (spawner in allSpawners) {
+            if (spawner.spawning == null) {
+                spawner.spawnCreep(workParameter, workerName, options {
+                    memory = jsObject<CreepMemory> {
+                        this.roomSpawnLocation = spawner.pos.roomName
+                        this.job = jobType
+                        console.log("Creating Creep with body $workParameter")
                     }
-                }
-                val couriersNeeded = sources.size
-                if (courierCreeps.size < couriersNeeded) {
-                    console.log("Courier Needed")
-                    return JobType.COURIER.name
-                }
-                val janitorNeeded = roomCreeps.filter { it.memory.job == JobType.JANITOR.name }
-                if (janitorNeeded.isEmpty() && currentRoom.storage != null) {
-                    console.log("Janitor Needed")
-                    return JobType.JANITOR.name
-                }
-                val repairManNeeded = roomCreeps.filter { it.memory.job == JobType.REPAIRMAN.name }
-                if (repairManNeeded.isEmpty() && currentRoom.storage != null) {
-                    val repairDataObject = Memory.repairDataObjects.find { currentRoom.name == it.roomOwner }
-                    if (repairDataObject != null){
-                        repairDataObject.repairID = ""
-                    }
-                    console.log("Repairman man man man...")
-                    return JobType.REPAIRMAN.name
-                }
-                val activeUpgrader = roomCreeps.filter { it.memory.job == JobType.UPGRADER.name }
-                if (activeUpgrader.isEmpty()) {
-                    console.log("Upgrader Needed")
-                    return JobType.UPGRADER.name
-                }
-                var constructionSiteID = ""
-                for (constructionDataObject in Memory.constructionDataObjects) {
-                    if (constructionDataObject.roomOwner == currentRoom.name) {
-                        constructionSiteID = constructionDataObject.constructionSiteID
-                        break
-                    }
-                }
-                if (constructionSiteID.isNotBlank()) {
-                    val activeBuilders = roomCreeps.filter { it.memory.job == JobType.BUILDER.name }
-                    if (activeBuilders.size < 2) {
-                        console.log("Builder Needed")
-                        return JobType.BUILDER.name
-                    }
-                }
+                })
+                break
             }
         }
-        return JobType.IDLE.name
     }
 
-    /**
-     * Checks to see if worker is null and increases worker number
-     */
-    fun generateNewCreepNameByJobType(jobName: String): String {
-        var workerNumber = 1
-        while (true) {
-            val workerName = "${jobName.toLowerCase()} $workerNumber"
-            val nameChecker: Creep? = Game.creeps[workerName]
-            if (nameChecker == null) {
-                return workerName
-            } else {
-                workerNumber += 1
-            }
-        }
-    }
 }

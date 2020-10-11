@@ -14,15 +14,22 @@ class JanitorCreepManager(private val creeps:List<Creep>): CreepStateManager()  
         for (janitor in creeps) {
             energyManagement(janitor)
             val homeRoom = Game.rooms[janitor.pos.roomName]!!
+            val sources = homeRoom.memory.sources
             if (!janitor.memory.fullOfEnergy) {
-                val harvesters = Game.creeps.values.filter { it.memory.job == JobType.HARVESTER.name && it.memory.roomSpawnLocation == homeRoom.name }
-                for (harvester in harvesters) {
-                    val droppedEnergy = harvester.pos.lookFor(LOOK_RESOURCES)
-                    if (droppedEnergy != null) {
-                        droppedEnergy.sortByDescending { it.amount }
-                        when (janitor.pickup(droppedEnergy[0])) {
+                //val harvesters = Game.creeps.values.filter { it.memory.job == JobType.HARVESTER.name && it.memory.roomSpawnLocation == homeRoom.name }
+                for (source in sources) {
+                    val sourceInstance = Game.getObjectById<Source>(source.sourceID)!!
+                    val droppedEnergy = homeRoom.lookAtAreaAsArray(
+                            sourceInstance.pos.y-3,
+                            sourceInstance.pos.x-3,
+                            sourceInstance.pos.y+3,
+                            sourceInstance.pos.x+3
+                    ).filter { it.type == LOOK_RESOURCES }
+                    if (droppedEnergy.isNotEmpty()) {
+                        droppedEnergy.sortedByDescending { it.resource!!.amount }
+                        when (janitor.pickup(droppedEnergy[0].resource!!)) {
                             ERR_NOT_IN_RANGE -> {
-                                janitor.moveTo((droppedEnergy[0].pos))
+                                janitor.moveTo((droppedEnergy[0].resource!!))
                             }
                         }
                     } else {
