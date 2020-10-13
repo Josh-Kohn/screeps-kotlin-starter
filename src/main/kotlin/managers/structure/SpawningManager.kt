@@ -306,6 +306,54 @@ class SpawningManager {
                 carryRatio = 1
                 moveRatio = 2
             }
+            JobType.CAPTAIN.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 1
+            }
+            JobType.TANK.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 1
+            }
+            JobType.SCOUT.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 1
+            }
+            JobType.HEALER.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 1
+            }
+            JobType.RANGER.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 1
+            }
+            JobType.SENTINEL.name -> {
+                maxWork = 1
+                maxCarry = 1
+                maxMove = 1
+                workRatio = 1
+                carryRatio = 1
+                moveRatio = 1
+            }
             else -> {
                 maxWork = 1
                 maxCarry = 1
@@ -335,7 +383,7 @@ class SpawningManager {
      */
     fun findJob(currentRoom: Room): String {
         //Write an if check to see if we have any harvester and courier creeps in the room
-        val roomCreeps = currentRoom.find(FIND_MY_CREEPS)
+        val roomCreeps = Game.creeps.values.filter { it.memory.roomSpawnLocation == currentRoom.name }
         val harvestCreeps = roomCreeps.filter { it.memory.job == JobType.HARVESTER.name }
         val courierCreeps = roomCreeps.filter { it.memory.job == JobType.COURIER.name }
         when {
@@ -378,7 +426,7 @@ class SpawningManager {
                     return JobType.REPAIRMAN.name
                 }
                 val activeUpgrader = roomCreeps.filter { it.memory.job == JobType.UPGRADER.name }
-                if (activeUpgrader.isEmpty()) {
+                if (activeUpgrader.size < 2) {
                     console.log("Upgrader Needed")
                     return JobType.UPGRADER.name
                 }
@@ -394,6 +442,25 @@ class SpawningManager {
                     if (activeBuilders.size < 2) {
                         console.log("Builder Needed")
                         return JobType.BUILDER.name
+                    }
+                }
+                val rallyFlag = Game.flags["Rally Here"]
+                if (rallyFlag != null ){
+                    val squad = arrayOf<String>(
+                            JobType.CAPTAIN.name,
+                            JobType.HEALER.name,
+                            JobType.HEALER.name,
+                            JobType.TANK.name,
+                            JobType.TANK.name,
+                            JobType.RANGER.name,
+                            JobType.RANGER.name)
+                    for (rank in squad){
+                        val creeps = roomCreeps.filter { it.memory.job == rank }
+                        val creepSquad = squad.filter { it == rank }
+                        if (creeps.size < creepSquad.size){
+                            console.log("$rank")
+                            return rank
+                        }
                     }
                 }
             }
