@@ -53,20 +53,27 @@ class BuildCreepManager(private val creeps:List<Creep>): EnergyLocationManager, 
                     val constructionSite = Game.getObjectById<ConstructionSite>(builder.memory.constructionSiteID)
                     if (constructionSite != null) {
                         val droppedEnergy = homeRoom.lookAtAreaAsArray(
-                                constructionSite.pos.y - 3,
-                                constructionSite.pos.x - 3,
-                                constructionSite.pos.y + 3,
-                                constructionSite.pos.x + 3
+                                (constructionSite.pos.y - 3).coerceIn(0, 49),
+                                (constructionSite.pos.x - 3).coerceIn(0, 49),
+                                (constructionSite.pos.y + 3).coerceIn(0, 49),
+                                (constructionSite.pos.x + 3).coerceIn(0, 49)
                         ).filter { it.type == LOOK_RESOURCES }
                         if (droppedEnergy.isNotEmpty()){
                             when (builder.pickup(droppedEnergy[0].resource!!)){
                                 ERR_NOT_IN_RANGE -> {
                                     builder.moveTo(droppedEnergy[0].resource!!.pos)
-                                    //TODO Figure out why it's not getting past here
                                 }
                             }
                         } else {
                             builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""
+                            if (builder.memory.withdrawID.isBlank()){
+                                val sources = builder.room.find(FIND_SOURCES)
+                                when (builder.harvest(sources[0])){
+                                    ERR_NOT_IN_RANGE -> {
+                                        builder.moveTo(sources[0].pos)
+                                    }
+                                }
+                            }
                         }
                     } else {
                         builder.memory.withdrawID = getHighestCapacityContainerID(homeRoom.name) ?: ""

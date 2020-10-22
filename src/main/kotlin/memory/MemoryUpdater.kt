@@ -1,5 +1,6 @@
 package memory
 
+import flag.constructionFlag
 import job.JobType
 import objects.ConstructionDataObject
 import objects.RepairDataObject
@@ -42,6 +43,17 @@ class MemoryUpdater {
                         if (constructionSites.isNotEmpty()){
                             constructionDataObject.constructionSiteID = constructionSites[0].id
                         } else {
+                            val flag = Game.flags[constructionFlag(room.name)]
+                            if (flag != null){
+                                val foreignRoom = Game.rooms[flag.pos.roomName]
+                                if (foreignRoom != null) {
+                                    val foreignConstructionSites = foreignRoom.find(FIND_MY_CONSTRUCTION_SITES)
+                                    if (foreignConstructionSites.isNotEmpty()){
+                                        constructionDataObject.constructionSiteID = foreignConstructionSites[0].id
+                                        continue
+                                    }
+                                }
+                            }
                             constructionDataObject.constructionSiteID = ""
                         }
                     }
@@ -62,8 +74,10 @@ class MemoryUpdater {
                     val repairStructure = Game.getObjectById<Structure>(repairDataObject.repairID)
                     if ( repairStructure == null || repairStructure.hits == repairStructure.hitsMax){
                         val repairSites = room.find(FIND_STRUCTURES, options { filter = {
-                            it.structureType != STRUCTURE_ROAD && it.structureType != STRUCTURE_CONTAINER && it.hits < it.hitsMax
+                            it.hits < it.hitsMax
                         }})
+                        //Deprecated but might be useful
+                        //it.structureType != STRUCTURE_ROAD && it.structureType != STRUCTURE_CONTAINER &&
                         val sortedRepairSites = repairSites.sortedBy { it.hits }
                         if (sortedRepairSites.isNotEmpty()){
                             repairDataObject.repairID = sortedRepairSites[0].id

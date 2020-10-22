@@ -13,9 +13,6 @@ class InitializationManager(val rooms: List<Room> ) {
                 for (singleSource in getAllSources) {
                     val lookResult = room.lookAtAreaAsArray(singleSource.pos.y-1, singleSource.pos.x-1, singleSource.pos.y+1, singleSource.pos.x+1)
                     var maxEmptySpaces = lookResult.filter { space -> space.type == LOOK_TERRAIN && space.terrain != TERRAIN_WALL }.size
-                    if (maxEmptySpaces == 1) {
-                        maxEmptySpaces += 1
-                    }
                     val sourceDataMemory = SourceDataObject(singleSource.id,0, maxEmptySpaces, containerID = "")
                     room.memory.sources = room.memory.sources + sourceDataMemory
                 }

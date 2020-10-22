@@ -44,6 +44,37 @@ class RepairCreepManager(private val creeps:List<Creep>): EnergyLocationManager,
                             repairman.moveTo(homeRoom.storage!!)
                         }
                     }
+                } else {
+                    val towers = homeRoom.find(FIND_MY_STRUCTURES).filter { (it.structureType == STRUCTURE_TOWER)}
+                    if (towers.isEmpty() ) {
+                        val roomController = repairman.room.controller!!
+                        val lookNearController = Game.rooms[repairman.memory.roomSpawnLocation]!!.lookAtAreaAsArray(
+                                roomController.pos.y - 3,
+                                roomController.pos.x - 3,
+                                roomController.pos.y + 3,
+                                roomController.pos.x + 3
+                        )
+                        val containersNearController = lookNearController.filter {
+                            (it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_CONTAINER)
+                                    || (it.type == LOOK_STRUCTURES && it.structure!!.structureType == STRUCTURE_STORAGE)
+                        }
+                        val container = containersNearController[0].structure!!
+                        if (containersNearController.isNotEmpty()) {
+                            when (repairman.withdraw(container as StoreOwner, RESOURCE_ENERGY)) {
+                                ERR_NOT_IN_RANGE -> {
+                                    repairman.moveTo(container)
+                                }
+                            }
+                        }
+                    } else {
+                        val roomController = repairman.room.controller
+                        when (repairman.upgradeController(roomController!!)){
+                            ERR_NOT_IN_RANGE -> {
+                                repairman.moveTo(roomController)
+                            }
+                        }
+
+                    }
                 }
             }
         }

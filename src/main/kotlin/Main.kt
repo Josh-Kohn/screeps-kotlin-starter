@@ -1,6 +1,7 @@
 import job.JobType
 import managers.*
 import managers.creeps.*
+import managers.military.MilitaryCreepManager
 import managers.structure.SpawningManager
 import managers.structure.TowerManager
 import memory.*
@@ -19,6 +20,38 @@ import screeps.utils.unsafe.delete
 @Suppress("unused")
 fun loop() {
 
+    val claimFlag = Game.flags["cf"]
+
+    // Only do if the cf flag exists
+    if (claimFlag != null) {
+        val claimRoom = Game.rooms[claimFlag.pos.roomName]
+
+        if (claimRoom != null && claimRoom.controller!!.my) {
+            // We can see into the room and the controller is now ours. Stop doing stuff.
+        }
+
+        // We either can't see into the room or we can and the controller isn't ours, do stuff.
+        else {
+            val claimCreep = Game.creeps["cc"]
+
+            // Create this creep if he doesn't exist
+            if (claimCreep == null) Game.spawns["Spawn1"]?.spawnCreep(arrayOf(CLAIM, CLAIM, MOVE, MOVE), "cc")
+
+            // The creep exists, go attack controller or claim it
+            else {
+                if (claimRoom == null) claimCreep.moveTo(claimFlag)
+                else {
+                    when (claimCreep.claimController(claimRoom.controller!!)) {
+                        ERR_NOT_IN_RANGE -> claimCreep.moveTo(claimRoom.controller!!)
+                        else -> claimCreep.attackController(claimRoom.controller!!)
+                    }
+                }
+            }
+        }
+    }
+
+
+
     val myRooms = getMyRooms()
     val initializationManager = InitializationManager(myRooms)
     initializationManager.sourceContainerAssociation()
@@ -34,7 +67,7 @@ fun loop() {
         val spawnManager = SpawningManager()
         val findAJob = spawnManager.findJob(room)
         if(findAJob != JobType.IDLE.name) {
-            val workerName = spawnManager.generateNewCreepNameByJobType(findAJob)
+            val workerName = spawnManager.generateNewCreepNameByJobType(findAJob, room.name)
 
             val numberOfCouriers = findAllCreepsByJobTypeInRoom(JobType.COURIER.name, room.name).size
             val energyToUse = if (numberOfCouriers < 1){
@@ -66,6 +99,12 @@ fun loop() {
 
     val repairCreepManager = RepairCreepManager(findAllCreepsByJobType(JobType.REPAIRMAN.name))
     repairCreepManager.repairStructures()
+
+    val militaryCreepManager = MilitaryCreepManager(findAllCreepsByJobType(listOf(JobType.CAPTAIN.name, JobType.TANK.name, JobType.HEALER.name, JobType.RANGER.name)))
+    militaryCreepManager.militaryOrders()
+
+
+
 
     if (Game.time == 20000){
         console.log("Room Controller Level at ${Game.rooms["sim"]!!.controller!!.level}")
@@ -108,6 +147,16 @@ fun findAllCreepsByJobType(jobType: String): MutableList<Creep> {
     val creeps: MutableList<Creep> = mutableListOf()
     for(creep in Game.creeps.values){
         if(creep.memory.job == jobType){
+            creeps.add(creep)
+        }
+    }
+    return creeps
+}
+
+fun findAllCreepsByJobType(jobTypes: List<String>): MutableList<Creep> {
+    val creeps: MutableList<Creep> = mutableListOf()
+    for (creep in Game.creeps.values){
+        if(jobTypes.any { it == creep.memory.job }){
             creeps.add(creep)
         }
     }

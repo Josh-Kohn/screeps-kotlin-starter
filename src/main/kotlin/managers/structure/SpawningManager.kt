@@ -244,12 +244,18 @@ class SpawningManager {
     }
 
     fun getBodyByJob(creepJob: String, energyToUse: Int, room: Room): List<BodyPartConstant> {
-        val maxWork: Int
-        val maxCarry: Int
-        val maxMove: Int
-        val carryRatio: Int
-        val moveRatio: Int
-        val workRatio: Int
+        var maxWork: Int = 0
+        var maxCarry: Int = 0
+        var maxMove: Int = 0
+        var maxHeal:Int = 0
+        var maxTough: Int = 0
+        var maxAttack: Int = 0
+        var carryRatio: Int = 0
+        var moveRatio: Int = 0
+        var workRatio: Int = 0
+        var healRatio: Int = 0
+        var attackRatio: Int = 0
+        var toughRatio: Int = 0
         val storageCapacity = room.storage?.store?.getUsedCapacity(RESOURCE_ENERGY) ?: 0
 
         when (creepJob) {
@@ -264,8 +270,8 @@ class SpawningManager {
             }
             JobType.COURIER.name -> {
                 maxWork = 0
-                maxCarry = 6
-                maxMove = 6
+                maxCarry = 8
+                maxMove = 8
                 workRatio = 0
                 carryRatio = 1
                 moveRatio = 1
@@ -315,12 +321,12 @@ class SpawningManager {
                 moveRatio = 1
             }
             JobType.TANK.name -> {
-                maxWork = 1
-                maxCarry = 1
-                maxMove = 1
-                workRatio = 1
-                carryRatio = 1
-                moveRatio = 1
+                maxTough = 12
+                maxAttack = 12
+                maxMove = 25
+                toughRatio = 1
+                attackRatio = 1
+                moveRatio = 2
             }
             JobType.SCOUT.name -> {
                 maxWork = 1
@@ -331,11 +337,9 @@ class SpawningManager {
                 moveRatio = 1
             }
             JobType.HEALER.name -> {
-                maxWork = 1
-                maxCarry = 1
-                maxMove = 1
-                workRatio = 1
-                carryRatio = 1
+                maxHeal = 25
+                maxMove = 25
+                healRatio = 1
                 moveRatio = 1
             }
             JobType.RANGER.name -> {
@@ -367,9 +371,15 @@ class SpawningManager {
                 maxWork = maxWork,
                 maxCarry = maxCarry,
                 maxMove = maxMove,
+                maxAttack = maxAttack,
+                maxHeal = maxHeal,
+                maxTough =  maxTough,
                 carryRatio = carryRatio,
                 moveRatio = moveRatio,
-                workRatio = workRatio)
+                workRatio = workRatio,
+                attackRatio = attackRatio,
+                healRatio =  healRatio,
+                toughRatio = toughRatio)
 
        return if (generateBodyByRatio.isEmpty()){
              listOf<BodyPartConstant>(MOVE, CARRY, WORK)
@@ -417,7 +427,7 @@ class SpawningManager {
                     return JobType.JANITOR.name
                 }
                 val repairManNeeded = roomCreeps.filter { it.memory.job == JobType.REPAIRMAN.name }
-                if (repairManNeeded.isEmpty() && currentRoom.storage != null) {
+                if (repairManNeeded.isEmpty() && currentRoom.storage != null ) {
                     val repairDataObject = Memory.repairDataObjects.find { currentRoom.name == it.roomOwner }
                     if (repairDataObject != null){
                         repairDataObject.repairID = ""
@@ -444,16 +454,12 @@ class SpawningManager {
                         return JobType.BUILDER.name
                     }
                 }
-                val rallyFlag = Game.flags["Rally Here"]
+                val rallyFlag = Game.flags["Rally Point"]
                 if (rallyFlag != null ){
                     val squad = arrayOf<String>(
-                            JobType.CAPTAIN.name,
                             JobType.HEALER.name,
-                            JobType.HEALER.name,
-                            JobType.TANK.name,
-                            JobType.TANK.name,
-                            JobType.RANGER.name,
-                            JobType.RANGER.name)
+                            JobType.TANK.name
+                    )
                     for (rank in squad){
                         val creeps = roomCreeps.filter { it.memory.job == rank }
                         val creepSquad = squad.filter { it == rank }
@@ -471,10 +477,10 @@ class SpawningManager {
     /**
      * Checks to see if worker is null and increases worker number
      */
-    fun generateNewCreepNameByJobType(jobName: String): String {
+    fun generateNewCreepNameByJobType(jobName: String, roomName: String): String {
         var workerNumber = 1
         while (true) {
-            val workerName = "${jobName.toLowerCase()} $workerNumber"
+            val workerName = "${jobName.toLowerCase()} $workerNumber - $roomName"
             val nameChecker: Creep? = Game.creeps[workerName]
             if (nameChecker == null) {
                 return workerName
